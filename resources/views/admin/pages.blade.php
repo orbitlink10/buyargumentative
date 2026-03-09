@@ -109,7 +109,7 @@
                         <td><span class="type">{{ $page['type'] ?? 'Post' }}</span></td>
                         <td>
                             <div class="actions">
-                                <a class="btn btn-info" href="{{ route('admin.pages.preview', ['id' => $page['id']]) }}">Preview</a>
+                                <a class="btn btn-info" href="{{ route('pages.show', ['slug' => $page['slug']]) }}" target="_blank" rel="noopener">Preview</a>
                                 <a class="btn btn-warn" href="{{ route('admin.pages.edit', ['id' => $page['id']]) }}">Update</a>
                                 <form class="inline" action="{{ route('admin.pages.delete', ['id' => $page['id']]) }}" method="POST" onsubmit="return confirm('Delete this page?');">
                                     @csrf

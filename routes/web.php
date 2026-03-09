@@ -292,13 +292,8 @@ Route::get('/pages', function () {
 })->name('pages.index');
 
 Route::get('/pages/{slug}', function ($slug) {
-    $page = collect(loadPages())->firstWhere('slug', (string) $slug);
-    if (!$page) {
-        abort(404);
-    }
-
-    return view('pages.show', ['page' => $page]);
-})->name('pages.show');
+    return redirect()->route('pages.show', ['slug' => (string) $slug], 301);
+})->name('pages.show.legacy');
 
 Route::get('/writers', function () {
     $writers = [
@@ -893,3 +888,17 @@ Route::post('/admin/settings', function (\Illuminate\Http\Request $request) {
 
     return back()->with('settings_saved', 'Pricing settings updated successfully.');
 })->name('admin.settings.update');
+
+Route::get('/{slug}', function ($slug) {
+    $slug = trim((string) $slug);
+    if ($slug === '') {
+        abort(404);
+    }
+
+    $page = collect(loadPages())->firstWhere('slug', $slug);
+    if (!$page) {
+        abort(404);
+    }
+
+    return view('pages.show', ['page' => $page]);
+})->where('slug', '[A-Za-z0-9\-]+')->name('pages.show');
