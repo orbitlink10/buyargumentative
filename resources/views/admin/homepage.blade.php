@@ -31,10 +31,26 @@
         .field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font:inherit;font-size:14px;background:#fff;color:var(--dark);}
         .field textarea{min-height:96px;resize:vertical;}
         .field textarea.seo-editor{min-height:360px;}
+        .seo-editor-shell{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;}
+        .seo-editor-shell.is-fullscreen{position:fixed;inset:12px;z-index:9999;box-shadow:0 28px 80px rgba(0,0,0,0.25);}
+        .seo-editor-menu,.seo-editor-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);background:#f9fafc;}
+        .seo-editor-toolbar{background:#fff;}
+        .seo-menu-btn,.seo-tool-btn{border:1px solid transparent;background:transparent;color:#334155;border-radius:8px;padding:6px 8px;font:inherit;font-size:14px;cursor:pointer;line-height:1;}
+        .seo-menu-btn:hover,.seo-tool-btn:hover{background:#eef2f7;border-color:#dde3ec;}
+        .seo-tool-btn.is-active{background:#eaf3ff;border-color:#bfdbfe;color:#1d4ed8;}
+        .seo-sep{width:1px;height:22px;background:#dbe2ea;margin:0 2px;}
+        .seo-editor-area{min-height:420px;max-height:720px;overflow:auto;padding:16px;font-size:20px;line-height:1.72;color:#0f172a;outline:none;}
+        .seo-editor-area h1,.seo-editor-area h2,.seo-editor-area h3{line-height:1.2;margin:0 0 10px;}
+        .seo-editor-area p{margin:0 0 14px;}
+        .seo-editor-area ul,.seo-editor-area ol{margin:0 0 14px 20px;}
+        .seo-editor-area:empty:before{content:attr(data-placeholder);color:#8b97a7;}
+        .seo-source{display:none;border:0;border-top:1px solid var(--border);border-radius:0;min-height:420px;resize:vertical;font-family:Consolas,'Courier New',monospace;font-size:14px;padding:16px;}
+        .seo-editor-shell.is-source .seo-editor-area{display:none;}
+        .seo-editor-shell.is-source .seo-source{display:block;}
+        .seo-editor-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--border);background:#f9fafc;color:#64748b;font-size:12px;font-weight:700;}
         .ok{background:#e7f8ee;color:#1f9b55;padding:10px 12px;border-radius:10px;font-weight:800;}
         .err{background:#fde9e9;color:#c53030;padding:10px 12px;border-radius:10px;font-weight:800;}
         .hint{font-size:13px;color:var(--muted);font-weight:700;}
-        .hint.warning{color:#9a5800;}
         .actions{display:flex;justify-content:flex-end;}
         @media(max-width:1000px){.layout{grid-template-columns:1fr;} .content{padding:20px;}}
     </style>
@@ -114,9 +130,49 @@
                 </div>
                 <div class="field full">
                     <label for="seo_content">Home Page Content (SEO)</label>
-                    <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here...">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
+                    <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here..." style="display:none;">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
+                    <div id="seoEditorShell" class="seo-editor-shell">
+                        <div class="seo-editor-menu">
+                            <button type="button" class="seo-menu-btn" data-action="undo">File</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">Edit</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">View</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">Insert</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">Format</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">Tools</button>
+                            <button type="button" class="seo-menu-btn" data-action="undo">Table</button>
+                        </div>
+                        <div class="seo-editor-toolbar">
+                            <button type="button" class="seo-tool-btn" data-cmd="undo" title="Undo">Undo</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="redo" title="Redo">Redo</button>
+                            <span class="seo-sep"></span>
+                            <button type="button" class="seo-tool-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                            <button type="button" class="seo-tool-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+                            <button type="button" class="seo-tool-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+                            <span class="seo-sep"></span>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyLeft" title="Align left">Left</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyCenter" title="Align center">Center</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyRight" title="Align right">Right</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyFull" title="Justify">Justify</button>
+                            <span class="seo-sep"></span>
+                            <button type="button" class="seo-tool-btn" data-cmd="insertUnorderedList" title="Bulleted list">List</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="outdent" title="Outdent">Out</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="indent" title="Indent">In</button>
+                            <span class="seo-sep"></span>
+                            <button type="button" class="seo-tool-btn" data-action="link" title="Insert link">Link</button>
+                            <button type="button" class="seo-tool-btn" data-action="image" title="Insert image">Image</button>
+                            <button type="button" class="seo-tool-btn" data-action="removeFormat" title="Clear formatting">Clear</button>
+                            <button type="button" class="seo-tool-btn" data-action="code" title="HTML source">Code</button>
+                            <button type="button" class="seo-tool-btn" data-action="fullscreen" title="Fullscreen">Full</button>
+                        </div>
+                        <div id="seo_content_editor" class="seo-editor-area" contenteditable="true" data-placeholder="Write SEO content here..."></div>
+                        <textarea id="seo_content_source" class="seo-source" spellcheck="false"></textarea>
+                        <div class="seo-editor-footer">
+                            <span>Self-hosted editor (no API key)</span>
+                            <span id="seo_word_count">0 words</span>
+                        </div>
+                    </div>
                     <div class="hint">Long-form SEO content supports plain text or HTML formatting.</div>
-                    <div id="seo_editor_notice" class="hint warning" style="display:none;"></div>
                 </div>
                 <div class="field">
                     <label for="rating_one_score">Rating One Score</label>
@@ -176,62 +232,96 @@
 <script>
     (function () {
         const textarea = document.getElementById('seo_content');
-        const notice = document.getElementById('seo_editor_notice');
-        if (!textarea) {
+        const shell = document.getElementById('seoEditorShell');
+        const editor = document.getElementById('seo_content_editor');
+        const source = document.getElementById('seo_content_source');
+        const wordCount = document.getElementById('seo_word_count');
+        const form = document.getElementById('homepageContentForm');
+
+        if (!textarea || !shell || !editor || !source || !form) {
             return;
         }
 
-        function showTextareaFallback(message) {
-            textarea.style.display = 'block';
-            textarea.style.visibility = 'visible';
-            if (notice) {
-                notice.textContent = message;
-                notice.style.display = 'block';
+        function updateWordCount(html) {
+            const text = (html || '')
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const count = text ? text.split(' ').length : 0;
+            wordCount.textContent = count + ' words';
+        }
+
+        function syncToTextarea() {
+            if (shell.classList.contains('is-source')) {
+                textarea.value = source.value;
+                updateWordCount(source.value);
+            } else {
+                textarea.value = editor.innerHTML;
+                updateWordCount(editor.innerHTML);
             }
         }
 
-        function initTiny() {
-            if (!window.tinymce) {
-                showTextareaFallback('Rich editor could not load. You can edit in the textarea normally.');
-                return;
-            }
+        function runCommand(cmd) {
+            editor.focus();
+            document.execCommand(cmd, false, null);
+            syncToTextarea();
+        }
 
-            window.tinymce.init({
-                selector: '#seo_content',
-                height: 460,
-                menubar: 'file edit view insert format tools table',
-                plugins: 'advlist autolink lists link image media table code fullscreen',
-                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code fullscreen',
-                branding: false,
-                promotion: false,
-                statusbar: true,
-                setup: function (editor) {
-                    editor.on('change input undo redo keyup', function () {
-                        editor.save();
-                    });
-
-                    editor.on('init', function () {
-                        const body = editor.getBody();
-                        const isReadOnlyMode = (editor.mode && typeof editor.mode.isReadOnly === 'function' && editor.mode.isReadOnly()) || (body && body.getAttribute('contenteditable') === 'false');
-                        if (isReadOnlyMode) {
-                            editor.remove();
-                            showTextareaFallback('Rich editor is in read-only mode on this domain. Use the textarea to edit content, or configure a TinyMCE API key.');
-                        }
-                    });
+        function runAction(action) {
+            if (action === 'link') {
+                const url = window.prompt('Enter URL');
+                if (url) {
+                    editor.focus();
+                    document.execCommand('createLink', false, url);
                 }
-            }).catch(function () {
-                showTextareaFallback('Rich editor failed to initialize. You can still edit content in the textarea.');
-            });
+            } else if (action === 'image') {
+                const url = window.prompt('Enter image URL');
+                if (url) {
+                    editor.focus();
+                    document.execCommand('insertImage', false, url);
+                }
+            } else if (action === 'removeFormat') {
+                editor.focus();
+                document.execCommand('removeFormat', false, null);
+            } else if (action === 'code') {
+                if (shell.classList.contains('is-source')) {
+                    editor.innerHTML = source.value;
+                    shell.classList.remove('is-source');
+                } else {
+                    source.value = editor.innerHTML;
+                    shell.classList.add('is-source');
+                }
+            } else if (action === 'fullscreen') {
+                shell.classList.toggle('is-fullscreen');
+                document.body.style.overflow = shell.classList.contains('is-fullscreen') ? 'hidden' : '';
+            } else {
+                runCommand('undo');
+            }
+            syncToTextarea();
         }
 
-        const script = document.createElement('script');
-        script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
-        script.referrerPolicy = 'origin';
-        script.onload = initTiny;
-        script.onerror = function () {
-            showTextareaFallback('Rich editor script failed to load. You can still edit content in the textarea.');
-        };
-        document.body.appendChild(script);
+        shell.querySelectorAll('[data-cmd]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                runCommand(btn.getAttribute('data-cmd'));
+            });
+        });
+
+        shell.querySelectorAll('[data-action]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                runAction(btn.getAttribute('data-action'));
+            });
+        });
+
+        editor.addEventListener('input', syncToTextarea);
+        source.addEventListener('input', syncToTextarea);
+
+        form.addEventListener('submit', function () {
+            syncToTextarea();
+        });
+
+        editor.innerHTML = textarea.value || '';
+        syncToTextarea();
     })();
 </script>
 </body>
