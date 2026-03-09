@@ -38,6 +38,12 @@
         .seo-menu-btn,.seo-tool-btn{border:1px solid transparent;background:transparent;color:#334155;border-radius:8px;padding:6px 8px;font:inherit;font-size:14px;cursor:pointer;line-height:1;}
         .seo-menu-btn:hover,.seo-tool-btn:hover{background:#eef2f7;border-color:#dde3ec;}
         .seo-tool-btn.is-active{background:#eaf3ff;border-color:#bfdbfe;color:#1d4ed8;}
+        .seo-menu-btn.is-open{background:#eef2f7;border-color:#dde3ec;}
+        .seo-format-panel{display:none;gap:8px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);background:#fffaf0;}
+        .seo-format-panel.is-open{display:flex;}
+        .seo-format-btn{border:1px solid #dce4ef;background:#fff;color:#334155;border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1;}
+        .seo-format-btn:hover{background:#eef2f7;}
+        .seo-format-btn.is-active{background:#eaf3ff;border-color:#bfdbfe;color:#1d4ed8;}
         .seo-sep{width:1px;height:22px;background:#dbe2ea;margin:0 2px;}
         .seo-editor-area{min-height:420px;max-height:720px;overflow:auto;padding:16px;font-size:20px;line-height:1.72;color:#0f172a;outline:none;}
         .seo-editor-area h1,.seo-editor-area h2,.seo-editor-area h3{line-height:1.2;margin:0 0 10px;}
@@ -133,37 +139,45 @@
                     <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here..." style="display:none;">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
                     <div id="seoEditorShell" class="seo-editor-shell">
                         <div class="seo-editor-menu">
-                            <button type="button" class="seo-menu-btn" data-action="undo">File</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">Edit</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">View</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">Insert</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">Format</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">Tools</button>
-                            <button type="button" class="seo-menu-btn" data-action="undo">Table</button>
+                            <button type="button" class="seo-menu-btn">File</button>
+                            <button type="button" class="seo-menu-btn">Edit</button>
+                            <button type="button" class="seo-menu-btn">View</button>
+                            <button type="button" class="seo-menu-btn">Insert</button>
+                            <button type="button" class="seo-menu-btn" id="seoFormatMenuBtn" data-menu="format">Format</button>
+                            <button type="button" class="seo-menu-btn">Tools</button>
+                            <button type="button" class="seo-menu-btn">Table</button>
+                        </div>
+                        <div id="seoFormatPanel" class="seo-format-panel">
+                            <button type="button" class="seo-format-btn" data-format="P">Paragraph</button>
+                            <button type="button" class="seo-format-btn" data-format="H1">Heading 1</button>
+                            <button type="button" class="seo-format-btn" data-format="H2">Heading 2</button>
+                            <button type="button" class="seo-format-btn" data-format="H3">Heading 3</button>
+                            <button type="button" class="seo-format-btn" data-format="H4">Heading 4</button>
+                            <button type="button" class="seo-format-btn" data-format="H5">Heading 5</button>
+                            <button type="button" class="seo-format-btn" data-format="H6">Heading 6</button>
+                            <button type="button" class="seo-format-btn" data-format="BLOCKQUOTE">Quote</button>
                         </div>
                         <div class="seo-editor-toolbar">
-                            <button type="button" class="seo-tool-btn" data-cmd="undo" title="Undo">Undo</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="redo" title="Redo">Redo</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="undo" title="Undo">&#8630;</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="redo" title="Redo">&#8631;</button>
                             <span class="seo-sep"></span>
                             <button type="button" class="seo-tool-btn" data-cmd="bold" title="Bold"><b>B</b></button>
                             <button type="button" class="seo-tool-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                            <button type="button" class="seo-tool-btn" data-cmd="underline" title="Underline"><u>U</u></button>
                             <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyLeft" title="Align left">Left</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyCenter" title="Align center">Center</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyRight" title="Align right">Right</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyFull" title="Justify">Justify</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyLeft" data-state-cmd="justifyLeft" title="Align left">&#9776;</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyCenter" data-state-cmd="justifyCenter" title="Align center">&#8801;</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyRight" data-state-cmd="justifyRight" title="Align right">&#9776;</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="justifyFull" data-state-cmd="justifyFull" title="Justify">&#8803;</button>
                             <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-cmd="insertUnorderedList" title="Bulleted list">List</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="insertOrderedList" title="Numbered list">1.</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="outdent" title="Outdent">Out</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="indent" title="Indent">In</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="outdent" title="Outdent">&#8676;</button>
+                            <button type="button" class="seo-tool-btn" data-cmd="indent" title="Indent">&#8677;</button>
                             <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-action="link" title="Insert link">Link</button>
-                            <button type="button" class="seo-tool-btn" data-action="image" title="Insert image">Image</button>
-                            <button type="button" class="seo-tool-btn" data-action="removeFormat" title="Clear formatting">Clear</button>
-                            <button type="button" class="seo-tool-btn" data-action="code" title="HTML source">Code</button>
-                            <button type="button" class="seo-tool-btn" data-action="fullscreen" title="Fullscreen">Full</button>
+                            <button type="button" class="seo-tool-btn" data-action="link" title="Insert link">&#9901;</button>
+                            <button type="button" class="seo-tool-btn" data-action="image" title="Insert image">&#9635;</button>
+                            <button type="button" class="seo-tool-btn" data-action="media" title="Insert media">&#9654;</button>
+                            <span class="seo-sep"></span>
+                            <button type="button" class="seo-tool-btn" data-action="code" title="HTML source">&lt;&gt;</button>
+                            <button type="button" class="seo-tool-btn" data-action="fullscreen" title="Fullscreen">&#9974;</button>
                         </div>
                         <div id="seo_content_editor" class="seo-editor-area" contenteditable="true" data-placeholder="Write SEO content here..."></div>
                         <textarea id="seo_content_source" class="seo-source" spellcheck="false"></textarea>
@@ -237,8 +251,11 @@
         const source = document.getElementById('seo_content_source');
         const wordCount = document.getElementById('seo_word_count');
         const form = document.getElementById('homepageContentForm');
+        const formatMenuBtn = document.getElementById('seoFormatMenuBtn');
+        const formatPanel = document.getElementById('seoFormatPanel');
+        const formatButtons = shell ? shell.querySelectorAll('[data-format]') : [];
 
-        if (!textarea || !shell || !editor || !source || !form) {
+        if (!textarea || !shell || !editor || !source || !form || !formatMenuBtn || !formatPanel) {
             return;
         }
 
@@ -263,28 +280,87 @@
         }
 
         function runCommand(cmd) {
+            if (shell.classList.contains('is-source')) {
+                return;
+            }
             editor.focus();
             document.execCommand(cmd, false, null);
             syncToTextarea();
+            syncToolbarState();
+        }
+
+        function applyBlockFormat(tag) {
+            if (shell.classList.contains('is-source')) {
+                return;
+            }
+            editor.focus();
+            const value = (tag || 'P').toUpperCase();
+            if (value === 'P') {
+                document.execCommand('formatBlock', false, 'P');
+            } else if (value === 'BLOCKQUOTE') {
+                document.execCommand('formatBlock', false, 'BLOCKQUOTE');
+            } else {
+                document.execCommand('formatBlock', false, value);
+            }
+            syncToTextarea();
+            syncToolbarState();
+        }
+
+        function getSelectionTag() {
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0) {
+                return 'P';
+            }
+            let node = selection.anchorNode;
+            if (!node) {
+                return 'P';
+            }
+            if (node.nodeType === Node.TEXT_NODE) {
+                node = node.parentElement;
+            }
+            while (node && node !== editor) {
+                const tag = (node.tagName || '').toUpperCase();
+                if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'BLOCKQUOTE'].includes(tag)) {
+                    return tag;
+                }
+                node = node.parentElement;
+            }
+            return 'P';
+        }
+
+        function syncToolbarState() {
+            const activeByCommand = ['bold', 'italic', 'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'];
+            shell.querySelectorAll('[data-state-cmd], [data-cmd]').forEach(function (btn) {
+                const cmd = btn.getAttribute('data-state-cmd') || btn.getAttribute('data-cmd');
+                if (!cmd || !activeByCommand.includes(cmd)) {
+                    btn.classList.remove('is-active');
+                    return;
+                }
+                try {
+                    btn.classList.toggle('is-active', document.queryCommandState(cmd));
+                } catch (e) {
+                    btn.classList.remove('is-active');
+                }
+            });
+
+            const tag = getSelectionTag();
+            formatButtons.forEach(function (btn) {
+                btn.classList.toggle('is-active', btn.getAttribute('data-format') === tag);
+            });
+        }
+
+        function closeFormatPanel() {
+            formatPanel.classList.remove('is-open');
+            formatMenuBtn.classList.remove('is-open');
+        }
+
+        function toggleFormatPanel() {
+            const open = formatPanel.classList.toggle('is-open');
+            formatMenuBtn.classList.toggle('is-open', open);
         }
 
         function runAction(action) {
-            if (action === 'link') {
-                const url = window.prompt('Enter URL');
-                if (url) {
-                    editor.focus();
-                    document.execCommand('createLink', false, url);
-                }
-            } else if (action === 'image') {
-                const url = window.prompt('Enter image URL');
-                if (url) {
-                    editor.focus();
-                    document.execCommand('insertImage', false, url);
-                }
-            } else if (action === 'removeFormat') {
-                editor.focus();
-                document.execCommand('removeFormat', false, null);
-            } else if (action === 'code') {
+            if (action === 'code') {
                 if (shell.classList.contains('is-source')) {
                     editor.innerHTML = source.value;
                     shell.classList.remove('is-source');
@@ -292,13 +368,52 @@
                     source.value = editor.innerHTML;
                     shell.classList.add('is-source');
                 }
-            } else if (action === 'fullscreen') {
+                syncToTextarea();
+                syncToolbarState();
+                return;
+            }
+
+            if (action === 'fullscreen') {
                 shell.classList.toggle('is-fullscreen');
                 document.body.style.overflow = shell.classList.contains('is-fullscreen') ? 'hidden' : '';
-            } else {
-                runCommand('undo');
+                return;
             }
+
+            if (shell.classList.contains('is-source')) {
+                return;
+            }
+
+            if (action === 'link') {
+                const url = window.prompt('Enter URL');
+                if (url) {
+                    editor.focus();
+                    document.execCommand('createLink', false, url.trim());
+                }
+            } else if (action === 'image') {
+                const url = window.prompt('Enter image URL');
+                if (url) {
+                    editor.focus();
+                    document.execCommand('insertImage', false, url.trim());
+                }
+            } else if (action === 'media') {
+                const value = window.prompt('Enter video URL or iframe embed code');
+                if (value) {
+                    const media = value.trim();
+                    editor.focus();
+                    if (/^<iframe/i.test(media)) {
+                        document.execCommand('insertHTML', false, media);
+                    } else if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(media)) {
+                        const safe = media.replace(/"/g, '&quot;');
+                        document.execCommand('insertHTML', false, '<video controls src="' + safe + '" style="max-width:100%;"></video>');
+                    } else {
+                        const safeUrl = media.replace(/"/g, '&quot;');
+                        document.execCommand('insertHTML', false, '<a href="' + safeUrl + '" target="_blank" rel="noopener">' + safeUrl + '</a>');
+                    }
+                }
+            }
+
             syncToTextarea();
+            syncToolbarState();
         }
 
         shell.querySelectorAll('[data-cmd]').forEach(function (btn) {
@@ -313,8 +428,35 @@
             });
         });
 
+        formatMenuBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleFormatPanel();
+        });
+
+        formatButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                applyBlockFormat(btn.getAttribute('data-format'));
+                closeFormatPanel();
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!formatPanel.contains(event.target) && event.target !== formatMenuBtn) {
+                closeFormatPanel();
+            }
+        });
+
         editor.addEventListener('input', syncToTextarea);
+        editor.addEventListener('keyup', syncToolbarState);
+        editor.addEventListener('mouseup', syncToolbarState);
+        editor.addEventListener('focus', syncToolbarState);
         source.addEventListener('input', syncToTextarea);
+
+        document.addEventListener('selectionchange', function () {
+            if (!shell.classList.contains('is-source')) {
+                syncToolbarState();
+            }
+        });
 
         form.addEventListener('submit', function () {
             syncToTextarea();
@@ -322,6 +464,7 @@
 
         editor.innerHTML = textarea.value || '';
         syncToTextarea();
+        syncToolbarState();
     })();
 </script>
 </body>
