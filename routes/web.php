@@ -516,9 +516,18 @@ Route::get('/admin', function () {
     }
     return view('admin.dashboard', [
         'orders' => $orders,
-        'homeContent' => loadHomepageContent(),
     ]);
 })->name('admin.dashboard');
+
+Route::get('/admin/homepage', function () {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    return view('admin.homepage', [
+        'homeContent' => loadHomepageContent(),
+    ]);
+})->name('admin.homepage');
 
 Route::post('/admin/homepage-content', function (\Illuminate\Http\Request $request) {
     if (!session('admin_logged_in')) {

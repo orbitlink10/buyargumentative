@@ -164,75 +164,6 @@
             padding: 0;
             overflow: hidden;
         }
-        .editor-card {
-            gap: 14px;
-        }
-        .editor-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-        .editor-title {
-            font-size: 20px;
-            font-weight: 800;
-        }
-        .editor-subtitle {
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 700;
-        }
-        .editor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-        .field {
-            display: grid;
-            gap: 6px;
-        }
-        .field.full {
-            grid-column: 1 / -1;
-        }
-        .field label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: var(--muted);
-            font-weight: 800;
-        }
-        .field input,
-        .field textarea {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 11px 12px;
-            font: inherit;
-            font-size: 14px;
-            color: var(--dark);
-            background: #fff;
-        }
-        .field textarea {
-            min-height: 96px;
-            resize: vertical;
-        }
-        .alert {
-            padding: 12px 14px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 14px;
-        }
-        .alert.success {
-            background: #e8f8ee;
-            color: #1a9b52;
-            border: 1px solid #c8e9d3;
-        }
-        .alert.error {
-            background: #fff0f0;
-            color: #bf2323;
-            border: 1px solid #ffd5d5;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -301,6 +232,7 @@
             <div class="nav-title">Configs</div>
             <a class="nav-link" href="{{ route('admin.orders') }}"><span>Mass Email</span></a>
             <a class="nav-link" href="{{ route('admin.settings') }}"><span>Settings</span></a>
+            <a class="nav-link" href="{{ route('admin.homepage') }}"><span>Homepage Content</span></a>
             <a class="nav-link" href="{{ route('admin.pages') }}"><span>Pages</span></a>
             <a class="nav-link" href="{{ route('admin.orders') }}"><span>Configs</span></a>
         </div>
@@ -309,7 +241,6 @@
     <main class="content">
         @php
             $orders = $orders ?? session('orders', []);
-            $homeContent = $homeContent ?? [];
             $count = function($status) use ($orders) { return collect($orders)->where('status', $status)->count(); };
         @endphp
         <div class="topbar">
@@ -322,101 +253,6 @@
                 <a class="btn btn-primary" href="{{ route('order.create') }}">New Order</a>
             </div>
         </div>
-
-        @if(session('homepage_saved'))
-            <div class="alert success">{{ session('homepage_saved') }}</div>
-        @endif
-        @if($errors->any())
-            <div class="alert error">{{ $errors->first() }}</div>
-        @endif
-
-        <section class="card editor-card">
-            <div class="editor-head">
-                <div>
-                    <div class="editor-title">Homepage Content</div>
-                    <div class="editor-subtitle">Edit the homepage hero text, ratings, and highlight cards.</div>
-                </div>
-                <button form="homepageContentForm" type="submit" class="btn btn-primary">Save Homepage</button>
-            </div>
-
-            <form id="homepageContentForm" action="{{ route('admin.homepage.update') }}" method="POST" class="editor-grid">
-                @csrf
-                <div class="field">
-                    <label for="eyebrow">Eyebrow</label>
-                    <input id="eyebrow" name="eyebrow" type="text" value="{{ old('eyebrow', $homeContent['eyebrow'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="cta_pill">CTA Pill</label>
-                    <input id="cta_pill" name="cta_pill" type="text" value="{{ old('cta_pill', $homeContent['cta_pill'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="hero_title_prefix">Hero Title Prefix</label>
-                    <input id="hero_title_prefix" name="hero_title_prefix" type="text" value="{{ old('hero_title_prefix', $homeContent['hero_title_prefix'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="hero_title_highlight">Hero Title Highlight</label>
-                    <input id="hero_title_highlight" name="hero_title_highlight" type="text" value="{{ old('hero_title_highlight', $homeContent['hero_title_highlight'] ?? '') }}" required>
-                </div>
-                <div class="field full">
-                    <label for="hero_title_suffix">Hero Title Suffix</label>
-                    <input id="hero_title_suffix" name="hero_title_suffix" type="text" value="{{ old('hero_title_suffix', $homeContent['hero_title_suffix'] ?? '') }}" required>
-                </div>
-                <div class="field full">
-                    <label for="hero_description">Hero Description</label>
-                    <textarea id="hero_description" name="hero_description" required>{{ old('hero_description', $homeContent['hero_description'] ?? '') }}</textarea>
-                </div>
-
-                <div class="field">
-                    <label for="rating_one_score">Rating One Score</label>
-                    <input id="rating_one_score" name="rating_one_score" type="text" value="{{ old('rating_one_score', $homeContent['rating_one_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_one_label">Rating One Label</label>
-                    <input id="rating_one_label" name="rating_one_label" type="text" value="{{ old('rating_one_label', $homeContent['rating_one_label'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_two_score">Rating Two Score</label>
-                    <input id="rating_two_score" name="rating_two_score" type="text" value="{{ old('rating_two_score', $homeContent['rating_two_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_two_label">Rating Two Label</label>
-                    <input id="rating_two_label" name="rating_two_label" type="text" value="{{ old('rating_two_label', $homeContent['rating_two_label'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_three_score">Rating Three Score</label>
-                    <input id="rating_three_score" name="rating_three_score" type="text" value="{{ old('rating_three_score', $homeContent['rating_three_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_three_label">Rating Three Label</label>
-                    <input id="rating_three_label" name="rating_three_label" type="text" value="{{ old('rating_three_label', $homeContent['rating_three_label'] ?? '') }}" required>
-                </div>
-
-                <div class="field">
-                    <label for="card_one_title">Card One Title</label>
-                    <input id="card_one_title" name="card_one_title" type="text" value="{{ old('card_one_title', $homeContent['card_one_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_two_title">Card Two Title</label>
-                    <input id="card_two_title" name="card_two_title" type="text" value="{{ old('card_two_title', $homeContent['card_two_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_two_pill">Card Two Pill</label>
-                    <input id="card_two_pill" name="card_two_pill" type="text" value="{{ old('card_two_pill', $homeContent['card_two_pill'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_three_title">Card Three Title</label>
-                    <input id="card_three_title" name="card_three_title" type="text" value="{{ old('card_three_title', $homeContent['card_three_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_four_title">Card Four Title</label>
-                    <input id="card_four_title" name="card_four_title" type="text" value="{{ old('card_four_title', $homeContent['card_four_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_four_pill">Card Four Pill</label>
-                    <input id="card_four_pill" name="card_four_pill" type="text" value="{{ old('card_four_pill', $homeContent['card_four_pill'] ?? '') }}" required>
-                </div>
-            </form>
-        </section>
 
         <section class="summary-grid">
             @php $statuses = [
