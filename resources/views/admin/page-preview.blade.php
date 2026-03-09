@@ -29,7 +29,10 @@
     $bodyText = trim((string) ($page['description'] ?? ''));
     $hasHtml = $bodyText !== strip_tags($bodyText);
     $headingTwo = trim((string) ($page['heading_two'] ?? ''));
-    if ($headingTwo === '') {
+    $pageTitle = trim((string) ($page['page_title'] ?? ''));
+    $normalizedHeadingTwo = strtolower(trim(preg_replace('/\s+/', ' ', strip_tags($headingTwo))));
+    $normalizedPageTitle = strtolower(trim(preg_replace('/\s+/', ' ', strip_tags($pageTitle))));
+    if ($headingTwo === '' || ($normalizedHeadingTwo !== '' && $normalizedHeadingTwo === $normalizedPageTitle)) {
         $headingTwo = 'Overview';
     }
 
@@ -104,7 +107,44 @@
         }
     }
 
+    if (!function_exists('autoSectionizePreviewPlainBody')) {
+        function autoSectionizePreviewPlainBody(string $text): string
+        {
+            $text = trim($text);
+            if ($text === '') {
+                return '';
+            }
+
+            $sentences = preg_split('/(?<=[\.\!\?])\s+/u', preg_replace('/\s+/', ' ', $text), -1, PREG_SPLIT_NO_EMPTY);
+            if (!is_array($sentences) || count($sentences) < 3) {
+                return '<p>' . e($text) . '</p>';
+            }
+
+            $sectionTitles = ['Introduction', 'Main Points', 'Practical Guidance', 'Final Thoughts'];
+            $sections = max(2, min(4, (int) ceil(count($sentences) / 3)));
+            $chunkSize = (int) ceil(count($sentences) / $sections);
+            $html = [];
+            $index = 0;
+
+            for ($i = 0; $i < $sections; $i++) {
+                $chunk = array_slice($sentences, $index, $chunkSize);
+                if (empty($chunk)) {
+                    continue;
+                }
+
+                $html[] = '<h3>' . e($sectionTitles[$i] ?? ('Section ' . ($i + 1))) . '</h3>';
+                $html[] = '<p>' . e(implode(' ', $chunk)) . '</p>';
+                $index += $chunkSize;
+            }
+
+            return implode("\n", $html);
+        }
+    }
+
     $renderedBody = $hasHtml ? $bodyText : renderPlainPreviewBodyWithStructure($bodyText);
+    if (!$hasHtml && !preg_match('/<h[1-6]\b/i', $renderedBody)) {
+        $renderedBody = autoSectionizePreviewPlainBody($bodyText);
+    }
 @endphp
 <div class="wrap">
     <div class="top">
