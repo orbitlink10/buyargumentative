@@ -259,18 +259,63 @@
         .card:nth-child(2) { bottom: 10%; left: 14%; }
         .card:nth-child(3) { top: 22%; right: 10%; }
         .card:nth-child(4) { bottom: 12%; right: 0; }
+        .seo-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 90px;
+        }
+        .seo-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 18px 40px rgba(17,24,39,0.06);
+            color: #1f2937;
+            line-height: 1.7;
+            font-size: 18px;
+        }
+        .seo-card h1,
+        .seo-card h2,
+        .seo-card h3,
+        .seo-card h4 {
+            margin: 0 0 12px;
+            line-height: 1.25;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+        }
+        .seo-card p {
+            margin: 0 0 14px;
+        }
+        .seo-card ul,
+        .seo-card ol {
+            margin: 0 0 14px 24px;
+        }
+        .seo-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 14px;
+        }
+        .seo-card td,
+        .seo-card th {
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+        }
         @media (max-width: 900px) {
             header { position: static; }
             .nav { gap: 16px; }
             .menu { display: none; }
             main { grid-template-columns: 1fr; padding: 40px 20px 60px; }
             .hero-visual { min-height: 320px; }
+            .seo-wrap { padding: 0 20px 60px; }
+            .seo-card { padding: 20px; font-size: 17px; }
         }
     </style>
 </head>
 <body>
 @php
     $homeContent = $homeContent ?? [];
+    $seoContent = trim((string) ($homeContent['seo_content'] ?? ''));
+    $seoHasHtml = $seoContent !== strip_tags($seoContent);
 @endphp
 <header>
     <div class="nav">
@@ -338,5 +383,16 @@
         </div>
     </section>
 </main>
+@if($seoContent !== '')
+    <section class="seo-wrap" id="seo-content">
+        <article class="seo-card">
+            @if($seoHasHtml)
+                {!! $seoContent !!}
+            @else
+                {!! nl2br(e($seoContent)) !!}
+            @endif
+        </article>
+    </section>
+@endif
 </body>
 </html>

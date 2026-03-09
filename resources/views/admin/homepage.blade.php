@@ -30,6 +30,7 @@
         .field label{font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:var(--muted);font-weight:800;}
         .field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font:inherit;font-size:14px;background:#fff;color:var(--dark);}
         .field textarea{min-height:96px;resize:vertical;}
+        .field textarea.seo-editor{min-height:360px;}
         .ok{background:#e7f8ee;color:#1f9b55;padding:10px 12px;border-radius:10px;font-weight:800;}
         .err{background:#fde9e9;color:#c53030;padding:10px 12px;border-radius:10px;font-weight:800;}
         .hint{font-size:13px;color:var(--muted);font-weight:700;}
@@ -110,6 +111,11 @@
                     <label for="hero_description">Hero Description</label>
                     <textarea id="hero_description" name="hero_description" required>{{ old('hero_description', $homeContent['hero_description'] ?? '') }}</textarea>
                 </div>
+                <div class="field full">
+                    <label for="seo_content">Home Page Content (SEO)</label>
+                    <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here...">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
+                    <div class="hint">Long-form SEO content supports plain text or HTML formatting.</div>
+                </div>
                 <div class="field">
                     <label for="rating_one_score">Rating One Score</label>
                     <input id="rating_one_score" name="rating_one_score" type="text" value="{{ old('rating_one_score', $homeContent['rating_one_score'] ?? '') }}" required>
@@ -165,5 +171,20 @@
         </form>
     </main>
 </div>
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    if (window.tinymce) {
+        tinymce.init({
+            selector: '#seo_content',
+            height: 460,
+            menubar: 'file edit view insert format tools table',
+            plugins: 'advlist autolink lists link image media table code fullscreen',
+            toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code fullscreen',
+            branding: false,
+            promotion: false,
+            statusbar: true
+        });
+    }
+</script>
 </body>
 </html>
