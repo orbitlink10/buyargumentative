@@ -34,6 +34,7 @@
         .ok{background:#e7f8ee;color:#1f9b55;padding:10px 12px;border-radius:10px;font-weight:800;}
         .err{background:#fde9e9;color:#c53030;padding:10px 12px;border-radius:10px;font-weight:800;}
         .hint{font-size:13px;color:var(--muted);font-weight:700;}
+        .hint.warning{color:#9a5800;}
         .actions{display:flex;justify-content:flex-end;}
         @media(max-width:1000px){.layout{grid-template-columns:1fr;} .content{padding:20px;}}
     </style>
@@ -115,6 +116,7 @@
                     <label for="seo_content">Home Page Content (SEO)</label>
                     <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here...">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
                     <div class="hint">Long-form SEO content supports plain text or HTML formatting.</div>
+                    <div id="seo_editor_notice" class="hint warning" style="display:none;"></div>
                 </div>
                 <div class="field">
                     <label for="rating_one_score">Rating One Score</label>
@@ -171,20 +173,66 @@
         </form>
     </main>
 </div>
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-    if (window.tinymce) {
-        tinymce.init({
-            selector: '#seo_content',
-            height: 460,
-            menubar: 'file edit view insert format tools table',
-            plugins: 'advlist autolink lists link image media table code fullscreen',
-            toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code fullscreen',
-            branding: false,
-            promotion: false,
-            statusbar: true
-        });
-    }
+    (function () {
+        const textarea = document.getElementById('seo_content');
+        const notice = document.getElementById('seo_editor_notice');
+        if (!textarea) {
+            return;
+        }
+
+        function showTextareaFallback(message) {
+            textarea.style.display = 'block';
+            textarea.style.visibility = 'visible';
+            if (notice) {
+                notice.textContent = message;
+                notice.style.display = 'block';
+            }
+        }
+
+        function initTiny() {
+            if (!window.tinymce) {
+                showTextareaFallback('Rich editor could not load. You can edit in the textarea normally.');
+                return;
+            }
+
+            window.tinymce.init({
+                selector: '#seo_content',
+                height: 460,
+                menubar: 'file edit view insert format tools table',
+                plugins: 'advlist autolink lists link image media table code fullscreen',
+                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | code fullscreen',
+                branding: false,
+                promotion: false,
+                statusbar: true,
+                setup: function (editor) {
+                    editor.on('change input undo redo keyup', function () {
+                        editor.save();
+                    });
+
+                    editor.on('init', function () {
+                        const body = editor.getBody();
+                        const isReadOnlyMode = (editor.mode && typeof editor.mode.isReadOnly === 'function' && editor.mode.isReadOnly()) || (body && body.getAttribute('contenteditable') === 'false');
+                        if (isReadOnlyMode) {
+                            editor.remove();
+                            showTextareaFallback('Rich editor is in read-only mode on this domain. Use the textarea to edit content, or configure a TinyMCE API key.');
+                        }
+                    });
+                }
+            }).catch(function () {
+                showTextareaFallback('Rich editor failed to initialize. You can still edit content in the textarea.');
+            });
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
+        script.referrerPolicy = 'origin';
+        script.onload = initTiny;
+        script.onerror = function () {
+            showTextareaFallback('Rich editor script failed to load. You can still edit content in the textarea.');
+        };
+        document.body.appendChild(script);
+    })();
 </script>
 </body>
 </html>
