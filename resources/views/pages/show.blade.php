@@ -67,6 +67,83 @@
 @php
     $bodyText = trim((string) ($page['description'] ?? ''));
     $hasHtml = $bodyText !== strip_tags($bodyText);
+    $headingTwo = trim((string) ($page['heading_two'] ?? ''));
+    if ($headingTwo === '') {
+        $headingTwo = 'Overview';
+    }
+
+    if (!function_exists('renderPlainBodyWithStructure')) {
+        function renderPlainBodyWithStructure(string $text): string
+        {
+            $text = trim($text);
+            if ($text === '') {
+                return '';
+            }
+
+            $lines = preg_split('/\R/u', str_replace(["\r\n", "\r"], "\n", $text));
+            $html = [];
+            $listType = null;
+
+            $closeList = function () use (&$html, &$listType): void {
+                if ($listType) {
+                    $html[] = '</' . $listType . '>';
+                    $listType = null;
+                }
+            };
+
+            foreach ($lines as $lineRaw) {
+                $line = trim((string) $lineRaw);
+                if ($line === '') {
+                    $closeList();
+                    continue;
+                }
+
+                if (preg_match('/^(#{1,6})\s+(.+)$/u', $line, $m)) {
+                    $closeList();
+                    $level = max(1, min(6, strlen((string) $m[1])));
+                    $html[] = '<h' . $level . '>' . e(trim((string) $m[2])) . '</h' . $level . '>';
+                    continue;
+                }
+
+                if (preg_match('/^\d+[\.\)]\s+(.+)$/u', $line, $m)) {
+                    if ($listType !== 'ol') {
+                        $closeList();
+                        $html[] = '<ol>';
+                        $listType = 'ol';
+                    }
+                    $html[] = '<li>' . e(trim((string) $m[1])) . '</li>';
+                    continue;
+                }
+
+                if (preg_match('/^[-*•]\s+(.+)$/u', $line, $m)) {
+                    if ($listType !== 'ul') {
+                        $closeList();
+                        $html[] = '<ul>';
+                        $listType = 'ul';
+                    }
+                    $html[] = '<li>' . e(trim((string) $m[1])) . '</li>';
+                    continue;
+                }
+
+                $wordCount = str_word_count(preg_replace('/[^A-Za-z0-9\s]/', ' ', $line));
+                $isHeadingLike = $wordCount > 1 && $wordCount <= 12 && strlen($line) <= 90 && !preg_match('/[.!?]$/u', $line);
+                if ($isHeadingLike) {
+                    $closeList();
+                    $html[] = '<h3>' . e(rtrim($line, ':')) . '</h3>';
+                    continue;
+                }
+
+                $closeList();
+                $html[] = '<p>' . e($line) . '</p>';
+            }
+
+            $closeList();
+
+            return implode("\n", $html);
+        }
+    }
+
+    $renderedBody = $hasHtml ? $bodyText : renderPlainBodyWithStructure($bodyText);
     $plain = trim(preg_replace('/\s+/', ' ', strip_tags($bodyText)));
     $words = $plain === '' ? 0 : count(explode(' ', $plain));
     $readMinutes = max(1, (int) ceil($words / 220));
@@ -111,32 +188,12 @@
             <img class="hero-img" src="{{ $page['feature_image'] }}" alt="{{ $page['image_alt_text'] ?? 'Page image' }}">
         @endif
         <div id="articleBody" class="article-body">
-            <h2>{{ $page['heading_two'] ?? 'Overview' }}</h2>
-            @if($hasHtml)
-                {!! $bodyText !!}
-            @else
-                {!! nl2br(e($bodyText)) !!}
-            @endif
+            <h2>{{ $headingTwo }}</h2>
+            {!! $renderedBody !!}
         </div>
     </article>
 
     <aside class="rail">
-        <section class="card rail-card">
-            <h3 class="rail-title">Article Details</h3>
-            <div class="meta-pair">
-                <small>Meta Title</small>
-                <div>{{ $page['meta_title'] ?? '-' }}</div>
-            </div>
-            <div class="meta-pair">
-                <small>Meta Description</small>
-                <div>{{ $page['meta_description'] ?? '-' }}</div>
-            </div>
-            <div class="meta-pair">
-                <small>Image Alt Text</small>
-                <div>{{ $page['image_alt_text'] ?? '-' }}</div>
-            </div>
-        </section>
-
         <section class="card rail-card">
             <h3 class="rail-title">Need Help Fast?</h3>
             <p style="margin:0 0 12px;color:var(--muted);font-weight:700;line-height:1.55;">Get a professional writer for your assignment with flexible deadlines and revision support.</p>

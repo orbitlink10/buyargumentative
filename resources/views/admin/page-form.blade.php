@@ -226,7 +226,17 @@
         function activeTag(){const s=window.getSelection();if(!s||!s.rangeCount)return'P';let n=s.anchorNode;if(n&&n.nodeType===Node.TEXT_NODE)n=n.parentElement;while(n&&n!==editor){const t=(n.tagName||'').toUpperCase();if(['P','H1','H2','H3','H4','H5','H6','BLOCKQUOTE'].includes(t))return t;n=n.parentElement;}return'P';}
         function state(){shell.querySelectorAll('[data-state-cmd],[data-cmd]').forEach(function(btn){const cmd=btn.getAttribute('data-state-cmd')||btn.getAttribute('data-cmd');if(!['bold','italic','underline','insertUnorderedList','insertOrderedList'].includes(cmd)){btn.classList.remove('is-active');return;}try{btn.classList.toggle('is-active',document.queryCommandState(cmd));}catch(e){btn.classList.remove('is-active');}});const t=activeTag();formatButtons.forEach(function(btn){btn.classList.toggle('is-active',btn.getAttribute('data-format')===t);});}
         function cmd(name){if(shell.classList.contains('is-source'))return;editor.focus();document.execCommand(name,false,null);sync();state();}
-        function fmt(tag){if(shell.classList.contains('is-source'))return;editor.focus();document.execCommand('formatBlock',false,tag==='P'?'P':tag);sync();state();}
+        function fmt(tag){
+            if(shell.classList.contains('is-source'))return;
+            editor.focus();
+            const value=tag==='P'?'P':String(tag||'P').toUpperCase();
+            document.execCommand('formatBlock',false,value);
+            if(value!=='P'&&activeTag()!==value){
+                document.execCommand('formatBlock',false,'<'+value+'>');
+            }
+            sync();
+            state();
+        }
         function saveRange(){const s=window.getSelection();if(!s||!s.rangeCount)return null;const r=s.getRangeAt(0);if(!editor.contains(r.commonAncestorContainer))return null;return r.cloneRange();}
         function restoreRange(r){if(!r)return;const s=window.getSelection();if(!s)return;s.removeAllRanges();s.addRange(r);}
         function closeDialog(){linkDialog.classList.remove('is-open');linkDialog.setAttribute('aria-hidden','true');editor.focus();}

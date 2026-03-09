@@ -28,6 +28,83 @@
 @php
     $bodyText = trim((string) ($page['description'] ?? ''));
     $hasHtml = $bodyText !== strip_tags($bodyText);
+    $headingTwo = trim((string) ($page['heading_two'] ?? ''));
+    if ($headingTwo === '') {
+        $headingTwo = 'Overview';
+    }
+
+    if (!function_exists('renderPlainPreviewBodyWithStructure')) {
+        function renderPlainPreviewBodyWithStructure(string $text): string
+        {
+            $text = trim($text);
+            if ($text === '') {
+                return '';
+            }
+
+            $lines = preg_split('/\R/u', str_replace(["\r\n", "\r"], "\n", $text));
+            $html = [];
+            $listType = null;
+
+            $closeList = function () use (&$html, &$listType): void {
+                if ($listType) {
+                    $html[] = '</' . $listType . '>';
+                    $listType = null;
+                }
+            };
+
+            foreach ($lines as $lineRaw) {
+                $line = trim((string) $lineRaw);
+                if ($line === '') {
+                    $closeList();
+                    continue;
+                }
+
+                if (preg_match('/^(#{1,6})\s+(.+)$/u', $line, $m)) {
+                    $closeList();
+                    $level = max(1, min(6, strlen((string) $m[1])));
+                    $html[] = '<h' . $level . '>' . e(trim((string) $m[2])) . '</h' . $level . '>';
+                    continue;
+                }
+
+                if (preg_match('/^\d+[\.\)]\s+(.+)$/u', $line, $m)) {
+                    if ($listType !== 'ol') {
+                        $closeList();
+                        $html[] = '<ol>';
+                        $listType = 'ol';
+                    }
+                    $html[] = '<li>' . e(trim((string) $m[1])) . '</li>';
+                    continue;
+                }
+
+                if (preg_match('/^[-*•]\s+(.+)$/u', $line, $m)) {
+                    if ($listType !== 'ul') {
+                        $closeList();
+                        $html[] = '<ul>';
+                        $listType = 'ul';
+                    }
+                    $html[] = '<li>' . e(trim((string) $m[1])) . '</li>';
+                    continue;
+                }
+
+                $wordCount = str_word_count(preg_replace('/[^A-Za-z0-9\s]/', ' ', $line));
+                $isHeadingLike = $wordCount > 1 && $wordCount <= 12 && strlen($line) <= 90 && !preg_match('/[.!?]$/u', $line);
+                if ($isHeadingLike) {
+                    $closeList();
+                    $html[] = '<h3>' . e(rtrim($line, ':')) . '</h3>';
+                    continue;
+                }
+
+                $closeList();
+                $html[] = '<p>' . e($line) . '</p>';
+            }
+
+            $closeList();
+
+            return implode("\n", $html);
+        }
+    }
+
+    $renderedBody = $hasHtml ? $bodyText : renderPlainPreviewBodyWithStructure($bodyText);
 @endphp
 <div class="wrap">
     <div class="top">
@@ -72,13 +149,9 @@
     </div>
 
     <div class="card">
-        <h2>{{ $page['heading_two'] ?? 'Heading 2' }}</h2>
+        <h2>{{ $headingTwo }}</h2>
         <div class="body">
-            @if($hasHtml)
-                {!! $bodyText !!}
-            @else
-                {!! nl2br(e($bodyText)) !!}
-            @endif
+            {!! $renderedBody !!}
         </div>
     </div>
 </div>
