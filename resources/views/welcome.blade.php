@@ -156,6 +156,7 @@
             font-size: 18px;
             line-height: 1.6;
             max-width: 580px;
+            white-space: pre-line;
         }
         .cta-row {
             display: flex;
@@ -268,6 +269,9 @@
     </style>
 </head>
 <body>
+@php
+    $homeContent = $homeContent ?? [];
+@endphp
 <header>
     <div class="nav">
         <a class="brand" href="#">
@@ -290,29 +294,26 @@
 
 <main>
     <section class="hero">
-        <span class="eyebrow">Trusted by 25k+ students</span>
-        <h1>Professional <span class="highlight">Paper Writing</span> Service that guarantees results</h1>
-        <p class="subtext">
-            Hire a dedicated academic writer with subject expertise, 24/7 communication, and industry-leading turnaround times.
-            Every paper is 100% original and tailored to your rubric.
-        </p>
+        <span class="eyebrow">{{ $homeContent['eyebrow'] ?? 'Trusted by 25k+ students' }}</span>
+        <h1>{{ $homeContent['hero_title_prefix'] ?? 'Professional' }} <span class="highlight">{{ $homeContent['hero_title_highlight'] ?? 'Paper Writing' }}</span> {{ $homeContent['hero_title_suffix'] ?? 'Service that guarantees results' }}</h1>
+        <p class="subtext">{{ $homeContent['hero_description'] ?? 'Hire a dedicated academic writer with subject expertise, 24/7 communication, and industry-leading turnaround times. Every paper is 100% original and tailored to your rubric.' }}</p>
         <div class="cta-row">
             <a class="btn btn-primary" href="{{ route('order', ['tab' => 'new']) }}">Order Now</a>
             <a class="btn btn-outline" href="#chat">Live Chat</a>
-            <span class="pill">Fast delivery · Free revisions</span>
+            <span class="pill">{{ $homeContent['cta_pill'] ?? 'Fast delivery | Free revisions' }}</span>
         </div>
         <div class="ratings">
             <div class="badge">
-                <div class="icon" style="background:#00b67a;">4.4★</div>
-                <div class="text">Trustpilot</div>
+                <div class="icon" style="background:#00b67a;">{{ $homeContent['rating_one_score'] ?? '4.4/5' }}</div>
+                <div class="text">{{ $homeContent['rating_one_label'] ?? 'Trustpilot' }}</div>
             </div>
             <div class="badge">
-                <div class="icon" style="background:#f36;">4.2★</div>
-                <div class="text">Sitejabber</div>
+                <div class="icon" style="background:#f36;">{{ $homeContent['rating_two_score'] ?? '4.2/5' }}</div>
+                <div class="text">{{ $homeContent['rating_two_label'] ?? 'Sitejabber' }}</div>
             </div>
             <div class="badge">
-                <div class="icon" style="background:#000;">4.9★</div>
-                <div class="text">Reviews.io</div>
+                <div class="icon" style="background:#000;">{{ $homeContent['rating_three_score'] ?? '4.9/5' }}</div>
+                <div class="text">{{ $homeContent['rating_three_label'] ?? 'Reviews.io' }}</div>
             </div>
         </div>
     </section>
@@ -320,20 +321,20 @@
     <section class="hero-visual" aria-hidden="true">
         <div class="orbital"></div>
         <div class="card">
-            <h4>Business Plan</h4>
+            <h4>{{ $homeContent['card_one_title'] ?? 'Business Plan' }}</h4>
             <div class="chart"></div>
         </div>
         <div class="card">
-            <h4>Problem Solving</h4>
-            <div class="pill">Data · Finance · Math</div>
+            <h4>{{ $homeContent['card_two_title'] ?? 'Problem Solving' }}</h4>
+            <div class="pill">{{ $homeContent['card_two_pill'] ?? 'Data | Finance | Math' }}</div>
         </div>
         <div class="card">
-            <h4>Research Paper</h4>
+            <h4>{{ $homeContent['card_three_title'] ?? 'Research Paper' }}</h4>
             <div class="chart"></div>
         </div>
         <div class="card">
-            <h4>Essay</h4>
-            <div class="pill">Creative · Argumentative</div>
+            <h4>{{ $homeContent['card_four_title'] ?? 'Essay' }}</h4>
+            <div class="pill">{{ $homeContent['card_four_pill'] ?? 'Creative | Argumentative' }}</div>
         </div>
     </section>
 </main>

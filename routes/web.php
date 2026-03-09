@@ -122,6 +122,137 @@ if (!function_exists('savePricing')) {
     }
 }
 
+if (!function_exists('defaultHomepageContent')) {
+    function defaultHomepageContent(): array
+    {
+        return [
+            'eyebrow' => 'Trusted by 25k+ students',
+            'hero_title_prefix' => 'Professional',
+            'hero_title_highlight' => 'Paper Writing',
+            'hero_title_suffix' => 'Service that guarantees results',
+            'hero_description' => 'Hire a dedicated academic writer with subject expertise, 24/7 communication, and industry-leading turnaround times. Every paper is 100% original and tailored to your rubric.',
+            'cta_pill' => 'Fast delivery | Free revisions',
+            'rating_one_score' => '4.4/5',
+            'rating_one_label' => 'Trustpilot',
+            'rating_two_score' => '4.2/5',
+            'rating_two_label' => 'Sitejabber',
+            'rating_three_score' => '4.9/5',
+            'rating_three_label' => 'Reviews.io',
+            'card_one_title' => 'Business Plan',
+            'card_two_title' => 'Problem Solving',
+            'card_two_pill' => 'Data | Finance | Math',
+            'card_three_title' => 'Research Paper',
+            'card_four_title' => 'Essay',
+            'card_four_pill' => 'Creative | Argumentative',
+        ];
+    }
+}
+
+if (!function_exists('loadHomepageContent')) {
+    function loadHomepageContent(): array
+    {
+        $defaults = defaultHomepageContent();
+        $file = storage_path('app/homepage.json');
+
+        if (!file_exists($file)) {
+            return $defaults;
+        }
+
+        $json = file_get_contents($file);
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            return $defaults;
+        }
+
+        $content = [];
+        foreach ($defaults as $key => $fallback) {
+            $value = $decoded[$key] ?? null;
+            $content[$key] = is_string($value) ? trim($value) : $fallback;
+            if ($content[$key] === '') {
+                $content[$key] = $fallback;
+            }
+        }
+
+        return $content;
+    }
+}
+
+if (!function_exists('saveHomepageContent')) {
+    function saveHomepageContent(array $content): void
+    {
+        $defaults = defaultHomepageContent();
+        $payload = [];
+        foreach ($defaults as $key => $fallback) {
+            $value = $content[$key] ?? $fallback;
+            $payload[$key] = is_string($value) ? trim($value) : $fallback;
+            if ($payload[$key] === '') {
+                $payload[$key] = $fallback;
+            }
+        }
+
+        $file = storage_path('app/homepage.json');
+        if (!is_dir(dirname($file))) {
+            mkdir(dirname($file), 0777, true);
+        }
+
+        file_put_contents($file, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+}
+
+if (!function_exists('loadPages')) {
+    function loadPages(): array
+    {
+        $file = storage_path('app/pages.json');
+        if (!file_exists($file)) {
+            return [];
+        }
+
+        $json = file_get_contents($file);
+        $data = json_decode($json, true);
+        return is_array($data) ? array_values($data) : [];
+    }
+}
+
+if (!function_exists('savePages')) {
+    function savePages(array $pages): void
+    {
+        $file = storage_path('app/pages.json');
+        if (!is_dir(dirname($file))) {
+            mkdir(dirname($file), 0777, true);
+        }
+
+        file_put_contents($file, json_encode(array_values($pages), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+}
+
+if (!function_exists('makePageSlug')) {
+    function makePageSlug(string $title, array $pages, ?int $exceptId = null): string
+    {
+        $base = strtolower(trim($title));
+        $base = preg_replace('/[^a-z0-9]+/i', '-', $base ?? '');
+        $base = trim((string) $base, '-');
+        if ($base === '') {
+            $base = 'page';
+        }
+
+        $slug = $base;
+        $i = 2;
+        $used = collect($pages)
+            ->filter(fn ($page) => (int) ($page['id'] ?? 0) !== (int) ($exceptId ?? 0))
+            ->pluck('slug')
+            ->filter(fn ($s) => is_string($s) && $s !== '')
+            ->values()
+            ->all();
+
+        while (in_array($slug, $used, true)) {
+            $slug = $base . '-' . $i;
+            $i++;
+        }
+
+        return $slug;
+    }
+}
+
 if (!function_exists('pricePerPageFor')) {
     function pricePerPageFor(?string $level, ?string $deadline): float
     {
@@ -149,8 +280,24 @@ if (!function_exists('pricePerPageFor')) {
 }
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome', [
+        'homeContent' => loadHomepageContent(),
+    ]);
 });
+
+Route::get('/pages', function () {
+    $pages = loadPages();
+    return view('pages.index', ['pages' => $pages]);
+})->name('pages.index');
+
+Route::get('/pages/{slug}', function ($slug) {
+    $page = collect(loadPages())->firstWhere('slug', (string) $slug);
+    if (!$page) {
+        abort(404);
+    }
+
+    return view('pages.show', ['page' => $page]);
+})->name('pages.show');
 
 Route::get('/writers', function () {
     $writers = [
@@ -367,8 +514,204 @@ Route::get('/admin', function () {
         $orders = session('orders');
         saveOrders($orders);
     }
-    return view('admin.dashboard', ['orders' => $orders]);
+    return view('admin.dashboard', [
+        'orders' => $orders,
+        'homeContent' => loadHomepageContent(),
+    ]);
 })->name('admin.dashboard');
+
+Route::post('/admin/homepage-content', function (\Illuminate\Http\Request $request) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $data = $request->validate([
+        'eyebrow' => 'required|string|max:120',
+        'hero_title_prefix' => 'required|string|max:120',
+        'hero_title_highlight' => 'required|string|max:120',
+        'hero_title_suffix' => 'required|string|max:180',
+        'hero_description' => 'required|string|max:2000',
+        'cta_pill' => 'required|string|max:120',
+        'rating_one_score' => 'required|string|max:30',
+        'rating_one_label' => 'required|string|max:60',
+        'rating_two_score' => 'required|string|max:30',
+        'rating_two_label' => 'required|string|max:60',
+        'rating_three_score' => 'required|string|max:30',
+        'rating_three_label' => 'required|string|max:60',
+        'card_one_title' => 'required|string|max:80',
+        'card_two_title' => 'required|string|max:80',
+        'card_two_pill' => 'required|string|max:120',
+        'card_three_title' => 'required|string|max:80',
+        'card_four_title' => 'required|string|max:80',
+        'card_four_pill' => 'required|string|max:120',
+    ]);
+
+    saveHomepageContent($data);
+
+    return back()->with('homepage_saved', 'Homepage content updated successfully.');
+})->name('admin.homepage.update');
+
+Route::get('/admin/pages', function () {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $pages = loadPages();
+    return view('admin.pages', ['pages' => $pages]);
+})->name('admin.pages');
+
+Route::get('/admin/pages/create', function () {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    return view('admin.page-form', [
+        'mode' => 'create',
+        'pageData' => [
+            'meta_title' => '',
+            'meta_description' => '',
+            'page_title' => '',
+            'image_alt_text' => '',
+            'heading_two' => '',
+            'type' => 'Post',
+            'description' => '',
+            'feature_image' => '',
+        ],
+    ]);
+})->name('admin.pages.create');
+
+Route::post('/admin/pages', function (\Illuminate\Http\Request $request) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $data = $request->validate([
+        'meta_title' => 'required|string|max:180',
+        'meta_description' => 'required|string|max:400',
+        'page_title' => 'required|string|max:180',
+        'image_alt_text' => 'required|string|max:180',
+        'heading_two' => 'required|string|max:180',
+        'type' => 'required|string|in:Post,Page',
+        'description' => 'required|string|max:50000',
+        'feature_image' => 'nullable|string|max:2000',
+    ]);
+
+    $pages = loadPages();
+    $id = (collect($pages)->max('id') ?? 0) + 1;
+    $slug = makePageSlug($data['page_title'], $pages);
+
+    $pages[] = [
+        'id' => $id,
+        'slug' => $slug,
+        'meta_title' => trim($data['meta_title']),
+        'meta_description' => trim($data['meta_description']),
+        'page_title' => trim($data['page_title']),
+        'image_alt_text' => trim($data['image_alt_text']),
+        'heading_two' => trim($data['heading_two']),
+        'type' => trim($data['type']),
+        'description' => trim($data['description']),
+        'feature_image' => trim((string) ($data['feature_image'] ?? '')),
+        'created_at' => now()->toDateTimeString(),
+        'updated_at' => now()->toDateTimeString(),
+    ];
+
+    savePages($pages);
+
+    return redirect()->route('admin.pages')->with('page_saved', 'Page posted successfully.');
+})->name('admin.pages.store');
+
+Route::get('/admin/pages/{id}/edit', function ($id) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $page = collect(loadPages())->firstWhere('id', (int) $id);
+    if (!$page) {
+        return redirect()->route('admin.pages');
+    }
+
+    return view('admin.page-form', [
+        'mode' => 'edit',
+        'pageData' => $page,
+    ]);
+})->name('admin.pages.edit');
+
+Route::post('/admin/pages/{id}', function (\Illuminate\Http\Request $request, $id) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $data = $request->validate([
+        'meta_title' => 'required|string|max:180',
+        'meta_description' => 'required|string|max:400',
+        'page_title' => 'required|string|max:180',
+        'image_alt_text' => 'required|string|max:180',
+        'heading_two' => 'required|string|max:180',
+        'type' => 'required|string|in:Post,Page',
+        'description' => 'required|string|max:50000',
+        'feature_image' => 'nullable|string|max:2000',
+    ]);
+
+    $pages = loadPages();
+    $targetId = (int) $id;
+    $exists = false;
+    foreach ($pages as &$page) {
+        if ((int) ($page['id'] ?? 0) !== $targetId) {
+            continue;
+        }
+
+        $page['slug'] = makePageSlug($data['page_title'], $pages, $targetId);
+        $page['meta_title'] = trim($data['meta_title']);
+        $page['meta_description'] = trim($data['meta_description']);
+        $page['page_title'] = trim($data['page_title']);
+        $page['image_alt_text'] = trim($data['image_alt_text']);
+        $page['heading_two'] = trim($data['heading_two']);
+        $page['type'] = trim($data['type']);
+        $page['description'] = trim($data['description']);
+        $page['feature_image'] = trim((string) ($data['feature_image'] ?? ''));
+        $page['updated_at'] = now()->toDateTimeString();
+        $exists = true;
+        break;
+    }
+    unset($page);
+
+    if (!$exists) {
+        return redirect()->route('admin.pages');
+    }
+
+    savePages($pages);
+
+    return redirect()->route('admin.pages')->with('page_saved', 'Page updated successfully.');
+})->name('admin.pages.update');
+
+Route::post('/admin/pages/{id}/delete', function ($id) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $pages = loadPages();
+    $targetId = (int) $id;
+    $pages = collect($pages)
+        ->reject(fn ($page) => (int) ($page['id'] ?? 0) === $targetId)
+        ->values()
+        ->all();
+    savePages($pages);
+
+    return redirect()->route('admin.pages')->with('page_saved', 'Page deleted successfully.');
+})->name('admin.pages.delete');
+
+Route::get('/admin/pages/{id}/preview', function ($id) {
+    if (!session('admin_logged_in')) {
+        return redirect()->route('admin.login');
+    }
+
+    $page = collect(loadPages())->firstWhere('id', (int) $id);
+    if (!$page) {
+        return redirect()->route('admin.pages');
+    }
+
+    return view('admin.page-preview', ['page' => $page]);
+})->name('admin.pages.preview');
 
 Route::get('/admin/orders', function (\Illuminate\Http\Request $request) {
     if (!session('admin_logged_in')) {
