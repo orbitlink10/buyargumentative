@@ -20,17 +20,24 @@
         .nav-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;color:#2f3236;font-weight:800;text-decoration:none;}
         .nav-link.active,.nav-link:hover{background:#fff2ec;color:var(--accent);}
         .content{padding:24px 28px 40px;display:grid;gap:16px;}
-        .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+        .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,0.04);}
         .btn{border:none;border-radius:10px;padding:10px 12px;font-weight:900;cursor:pointer;text-decoration:none;}
-        .btn-primary{background:var(--accent);color:#fff;}
-        .card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;}
+        .btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 25px rgba(242,92,60,0.25);}
+        .btn-ghost{background:#fff;color:#334155;border:1px solid var(--border);}
+        .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 18px 44px rgba(15,23,42,0.04);}
         .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
         .field{display:grid;gap:6px;}
         .field.full{grid-column:1/-1;}
         .field label{font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:var(--muted);font-weight:800;}
         .field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font:inherit;font-size:14px;background:#fff;color:var(--dark);}
+        .field input:focus,.field textarea:focus{outline:none;border-color:#f0b7a9;box-shadow:0 0 0 4px rgba(242,92,60,0.14);}
         .field textarea{min-height:96px;resize:vertical;}
         .field textarea.seo-editor{min-height:360px;}
+        .form-panels{display:grid;gap:14px;}
+        .panel{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fcfdff;}
+        .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+        .panel-title{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:#374151;}
+        .panel-sub{font-size:12px;color:#6b7280;font-weight:700;}
         .seo-editor-shell{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;}
         .seo-editor-shell.is-fullscreen{position:fixed;inset:12px;z-index:9999;box-shadow:0 28px 80px rgba(0,0,0,0.25);}
         .seo-editor-menu,.seo-editor-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);background:#f9fafc;}
@@ -54,10 +61,21 @@
         .seo-editor-shell.is-source .seo-editor-area{display:none;}
         .seo-editor-shell.is-source .seo-source{display:block;}
         .seo-editor-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--border);background:#f9fafc;color:#64748b;font-size:12px;font-weight:700;}
+        .seo-dialog{position:fixed;inset:0;background:rgba(15,23,42,0.48);display:none;align-items:center;justify-content:center;z-index:10000;padding:16px;}
+        .seo-dialog.is-open{display:flex;}
+        .seo-dialog-card{width:min(560px,100%);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 30px 80px rgba(15,23,42,0.35);padding:16px;display:grid;gap:12px;}
+        .seo-dialog-title{font-size:18px;font-weight:900;color:#0f172a;}
+        .seo-dialog-grid{display:grid;gap:10px;}
+        .seo-dialog-row{display:grid;gap:6px;}
+        .seo-dialog-row label{font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#6b7280;font-weight:800;}
+        .seo-dialog-row input[type="text"],.seo-dialog-row input[type="url"]{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;}
+        .seo-dialog-row input:focus{outline:none;border-color:#f0b7a9;box-shadow:0 0 0 4px rgba(242,92,60,0.12);}
+        .seo-dialog-check{display:flex;align-items:center;gap:8px;font-size:14px;color:#374151;font-weight:700;}
+        .seo-dialog-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
         .ok{background:#e7f8ee;color:#1f9b55;padding:10px 12px;border-radius:10px;font-weight:800;}
         .err{background:#fde9e9;color:#c53030;padding:10px 12px;border-radius:10px;font-weight:800;}
         .hint{font-size:13px;color:var(--muted);font-weight:700;}
-        .actions{display:flex;justify-content:flex-end;}
+        .actions{display:flex;justify-content:flex-end;position:sticky;bottom:8px;background:linear-gradient(180deg,rgba(247,248,251,0),rgba(247,248,251,0.96) 30%);padding-top:10px;}
         @media(max-width:1000px){.layout{grid-template-columns:1fr;} .content{padding:20px;}}
     </style>
 </head>
@@ -109,138 +127,194 @@
 
         <form id="homepageContentForm" action="{{ route('admin.homepage.update') }}" method="POST" class="card">
             @csrf
-            <div class="grid">
-                <div class="field">
-                    <label for="eyebrow">Eyebrow</label>
-                    <input id="eyebrow" name="eyebrow" type="text" value="{{ old('eyebrow', $homeContent['eyebrow'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="cta_pill">CTA Pill</label>
-                    <input id="cta_pill" name="cta_pill" type="text" value="{{ old('cta_pill', $homeContent['cta_pill'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="hero_title_prefix">Hero Title Prefix</label>
-                    <input id="hero_title_prefix" name="hero_title_prefix" type="text" value="{{ old('hero_title_prefix', $homeContent['hero_title_prefix'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="hero_title_highlight">Hero Title Highlight</label>
-                    <input id="hero_title_highlight" name="hero_title_highlight" type="text" value="{{ old('hero_title_highlight', $homeContent['hero_title_highlight'] ?? '') }}" required>
-                </div>
-                <div class="field full">
-                    <label for="hero_title_suffix">Hero Title Suffix</label>
-                    <input id="hero_title_suffix" name="hero_title_suffix" type="text" value="{{ old('hero_title_suffix', $homeContent['hero_title_suffix'] ?? '') }}" required>
-                </div>
-                <div class="field full">
-                    <label for="hero_description">Hero Description</label>
-                    <textarea id="hero_description" name="hero_description" required>{{ old('hero_description', $homeContent['hero_description'] ?? '') }}</textarea>
-                </div>
-                <div class="field full">
-                    <label for="seo_content">Home Page Content (SEO)</label>
-                    <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here..." style="display:none;">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
-                    <div id="seoEditorShell" class="seo-editor-shell">
-                        <div class="seo-editor-menu">
-                            <button type="button" class="seo-menu-btn">File</button>
-                            <button type="button" class="seo-menu-btn">Edit</button>
-                            <button type="button" class="seo-menu-btn">View</button>
-                            <button type="button" class="seo-menu-btn">Insert</button>
-                            <button type="button" class="seo-menu-btn" id="seoFormatMenuBtn" data-menu="format">Format</button>
-                            <button type="button" class="seo-menu-btn">Tools</button>
-                            <button type="button" class="seo-menu-btn">Table</button>
+            <div class="form-panels">
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Hero Section</div>
+                        <div class="panel-sub">Main copy shown above the fold.</div>
+                    </div>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="eyebrow">Eyebrow</label>
+                            <input id="eyebrow" name="eyebrow" type="text" value="{{ old('eyebrow', $homeContent['eyebrow'] ?? '') }}" required>
                         </div>
-                        <div id="seoFormatPanel" class="seo-format-panel">
-                            <button type="button" class="seo-format-btn" data-format="P">Paragraph</button>
-                            <button type="button" class="seo-format-btn" data-format="H1">Heading 1</button>
-                            <button type="button" class="seo-format-btn" data-format="H2">Heading 2</button>
-                            <button type="button" class="seo-format-btn" data-format="H3">Heading 3</button>
-                            <button type="button" class="seo-format-btn" data-format="H4">Heading 4</button>
-                            <button type="button" class="seo-format-btn" data-format="H5">Heading 5</button>
-                            <button type="button" class="seo-format-btn" data-format="H6">Heading 6</button>
-                            <button type="button" class="seo-format-btn" data-format="BLOCKQUOTE">Quote</button>
+                        <div class="field">
+                            <label for="cta_pill">CTA Pill</label>
+                            <input id="cta_pill" name="cta_pill" type="text" value="{{ old('cta_pill', $homeContent['cta_pill'] ?? '') }}" required>
                         </div>
-                        <div class="seo-editor-toolbar">
-                            <button type="button" class="seo-tool-btn" data-cmd="undo" title="Undo">&#8630;</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="redo" title="Redo">&#8631;</button>
-                            <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-                            <button type="button" class="seo-tool-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                            <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyLeft" data-state-cmd="justifyLeft" title="Align left">&#9776;</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyCenter" data-state-cmd="justifyCenter" title="Align center">&#8801;</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyRight" data-state-cmd="justifyRight" title="Align right">&#9776;</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="justifyFull" data-state-cmd="justifyFull" title="Justify">&#8803;</button>
-                            <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-cmd="outdent" title="Outdent">&#8676;</button>
-                            <button type="button" class="seo-tool-btn" data-cmd="indent" title="Indent">&#8677;</button>
-                            <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-action="link" title="Insert link">&#9901;</button>
-                            <button type="button" class="seo-tool-btn" data-action="image" title="Insert image">&#9635;</button>
-                            <button type="button" class="seo-tool-btn" data-action="media" title="Insert media">&#9654;</button>
-                            <span class="seo-sep"></span>
-                            <button type="button" class="seo-tool-btn" data-action="code" title="HTML source">&lt;&gt;</button>
-                            <button type="button" class="seo-tool-btn" data-action="fullscreen" title="Fullscreen">&#9974;</button>
+                        <div class="field">
+                            <label for="hero_title_prefix">Hero Title Prefix</label>
+                            <input id="hero_title_prefix" name="hero_title_prefix" type="text" value="{{ old('hero_title_prefix', $homeContent['hero_title_prefix'] ?? '') }}" required>
                         </div>
-                        <div id="seo_content_editor" class="seo-editor-area" contenteditable="true" data-placeholder="Write SEO content here..."></div>
-                        <textarea id="seo_content_source" class="seo-source" spellcheck="false"></textarea>
-                        <div class="seo-editor-footer">
-                            <span>Self-hosted editor (no API key)</span>
-                            <span id="seo_word_count">0 words</span>
+                        <div class="field">
+                            <label for="hero_title_highlight">Hero Title Highlight</label>
+                            <input id="hero_title_highlight" name="hero_title_highlight" type="text" value="{{ old('hero_title_highlight', $homeContent['hero_title_highlight'] ?? '') }}" required>
+                        </div>
+                        <div class="field full">
+                            <label for="hero_title_suffix">Hero Title Suffix</label>
+                            <input id="hero_title_suffix" name="hero_title_suffix" type="text" value="{{ old('hero_title_suffix', $homeContent['hero_title_suffix'] ?? '') }}" required>
+                        </div>
+                        <div class="field full">
+                            <label for="hero_description">Hero Description</label>
+                            <textarea id="hero_description" name="hero_description" required>{{ old('hero_description', $homeContent['hero_description'] ?? '') }}</textarea>
                         </div>
                     </div>
-                    <div class="hint">Long-form SEO content supports plain text or HTML formatting.</div>
-                </div>
-                <div class="field">
-                    <label for="rating_one_score">Rating One Score</label>
-                    <input id="rating_one_score" name="rating_one_score" type="text" value="{{ old('rating_one_score', $homeContent['rating_one_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_one_label">Rating One Label</label>
-                    <input id="rating_one_label" name="rating_one_label" type="text" value="{{ old('rating_one_label', $homeContent['rating_one_label'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_two_score">Rating Two Score</label>
-                    <input id="rating_two_score" name="rating_two_score" type="text" value="{{ old('rating_two_score', $homeContent['rating_two_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_two_label">Rating Two Label</label>
-                    <input id="rating_two_label" name="rating_two_label" type="text" value="{{ old('rating_two_label', $homeContent['rating_two_label'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_three_score">Rating Three Score</label>
-                    <input id="rating_three_score" name="rating_three_score" type="text" value="{{ old('rating_three_score', $homeContent['rating_three_score'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="rating_three_label">Rating Three Label</label>
-                    <input id="rating_three_label" name="rating_three_label" type="text" value="{{ old('rating_three_label', $homeContent['rating_three_label'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_one_title">Card One Title</label>
-                    <input id="card_one_title" name="card_one_title" type="text" value="{{ old('card_one_title', $homeContent['card_one_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_two_title">Card Two Title</label>
-                    <input id="card_two_title" name="card_two_title" type="text" value="{{ old('card_two_title', $homeContent['card_two_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_two_pill">Card Two Pill</label>
-                    <input id="card_two_pill" name="card_two_pill" type="text" value="{{ old('card_two_pill', $homeContent['card_two_pill'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_three_title">Card Three Title</label>
-                    <input id="card_three_title" name="card_three_title" type="text" value="{{ old('card_three_title', $homeContent['card_three_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_four_title">Card Four Title</label>
-                    <input id="card_four_title" name="card_four_title" type="text" value="{{ old('card_four_title', $homeContent['card_four_title'] ?? '') }}" required>
-                </div>
-                <div class="field">
-                    <label for="card_four_pill">Card Four Pill</label>
-                    <input id="card_four_pill" name="card_four_pill" type="text" value="{{ old('card_four_pill', $homeContent['card_four_pill'] ?? '') }}" required>
-                </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Home Page Content (SEO)</div>
+                        <div class="panel-sub">Rich text with headings, links, media and formatting.</div>
+                    </div>
+                    <div class="field full">
+                        <textarea id="seo_content" name="seo_content" class="seo-editor" placeholder="Write SEO content here..." style="display:none;">{{ old('seo_content', $homeContent['seo_content'] ?? '') }}</textarea>
+                        <div id="seoEditorShell" class="seo-editor-shell">
+                            <div class="seo-editor-menu">
+                                <button type="button" class="seo-menu-btn">File</button>
+                                <button type="button" class="seo-menu-btn">Edit</button>
+                                <button type="button" class="seo-menu-btn">View</button>
+                                <button type="button" class="seo-menu-btn">Insert</button>
+                                <button type="button" class="seo-menu-btn" id="seoFormatMenuBtn" data-menu="format">Format</button>
+                                <button type="button" class="seo-menu-btn">Tools</button>
+                                <button type="button" class="seo-menu-btn">Table</button>
+                            </div>
+                            <div id="seoFormatPanel" class="seo-format-panel">
+                                <button type="button" class="seo-format-btn" data-format="P">Paragraph</button>
+                                <button type="button" class="seo-format-btn" data-format="H1">Heading 1</button>
+                                <button type="button" class="seo-format-btn" data-format="H2">Heading 2</button>
+                                <button type="button" class="seo-format-btn" data-format="H3">Heading 3</button>
+                                <button type="button" class="seo-format-btn" data-format="H4">Heading 4</button>
+                                <button type="button" class="seo-format-btn" data-format="H5">Heading 5</button>
+                                <button type="button" class="seo-format-btn" data-format="H6">Heading 6</button>
+                                <button type="button" class="seo-format-btn" data-format="BLOCKQUOTE">Quote</button>
+                            </div>
+                            <div class="seo-editor-toolbar">
+                                <button type="button" class="seo-tool-btn" data-cmd="undo" title="Undo">&#8630;</button>
+                                <button type="button" class="seo-tool-btn" data-cmd="redo" title="Redo">&#8631;</button>
+                                <span class="seo-sep"></span>
+                                <button type="button" class="seo-tool-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                                <button type="button" class="seo-tool-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+                                <span class="seo-sep"></span>
+                                <button type="button" class="seo-tool-btn" data-cmd="justifyLeft" data-state-cmd="justifyLeft" title="Align left">&#9776;</button>
+                                <button type="button" class="seo-tool-btn" data-cmd="justifyCenter" data-state-cmd="justifyCenter" title="Align center">&#8801;</button>
+                                <button type="button" class="seo-tool-btn" data-cmd="justifyRight" data-state-cmd="justifyRight" title="Align right">&#9776;</button>
+                                <button type="button" class="seo-tool-btn" data-cmd="justifyFull" data-state-cmd="justifyFull" title="Justify">&#8803;</button>
+                                <span class="seo-sep"></span>
+                                <button type="button" class="seo-tool-btn" data-cmd="outdent" title="Outdent">&#8676;</button>
+                                <button type="button" class="seo-tool-btn" data-cmd="indent" title="Indent">&#8677;</button>
+                                <span class="seo-sep"></span>
+                                <button type="button" class="seo-tool-btn" data-action="link" title="Insert link">&#9901;</button>
+                                <button type="button" class="seo-tool-btn" data-action="image" title="Insert image">&#9635;</button>
+                                <button type="button" class="seo-tool-btn" data-action="media" title="Insert media">&#9654;</button>
+                                <span class="seo-sep"></span>
+                                <button type="button" class="seo-tool-btn" data-action="code" title="HTML source">&lt;&gt;</button>
+                                <button type="button" class="seo-tool-btn" data-action="fullscreen" title="Fullscreen">&#9974;</button>
+                            </div>
+                            <div id="seo_content_editor" class="seo-editor-area" contenteditable="true" data-placeholder="Write SEO content here..."></div>
+                            <textarea id="seo_content_source" class="seo-source" spellcheck="false"></textarea>
+                            <div class="seo-editor-footer">
+                                <span>Self-hosted editor (no API key)</span>
+                                <span id="seo_word_count">0 words</span>
+                            </div>
+                        </div>
+                        <div class="hint">Long-form SEO content supports plain text or HTML formatting.</div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Ratings</div>
+                        <div class="panel-sub">Trust badges displayed in the homepage hero.</div>
+                    </div>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="rating_one_score">Rating One Score</label>
+                            <input id="rating_one_score" name="rating_one_score" type="text" value="{{ old('rating_one_score', $homeContent['rating_one_score'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="rating_one_label">Rating One Label</label>
+                            <input id="rating_one_label" name="rating_one_label" type="text" value="{{ old('rating_one_label', $homeContent['rating_one_label'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="rating_two_score">Rating Two Score</label>
+                            <input id="rating_two_score" name="rating_two_score" type="text" value="{{ old('rating_two_score', $homeContent['rating_two_score'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="rating_two_label">Rating Two Label</label>
+                            <input id="rating_two_label" name="rating_two_label" type="text" value="{{ old('rating_two_label', $homeContent['rating_two_label'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="rating_three_score">Rating Three Score</label>
+                            <input id="rating_three_score" name="rating_three_score" type="text" value="{{ old('rating_three_score', $homeContent['rating_three_score'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="rating_three_label">Rating Three Label</label>
+                            <input id="rating_three_label" name="rating_three_label" type="text" value="{{ old('rating_three_label', $homeContent['rating_three_label'] ?? '') }}" required>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">Highlight Cards</div>
+                        <div class="panel-sub">Floating cards shown on the homepage visual area.</div>
+                    </div>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="card_one_title">Card One Title</label>
+                            <input id="card_one_title" name="card_one_title" type="text" value="{{ old('card_one_title', $homeContent['card_one_title'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="card_two_title">Card Two Title</label>
+                            <input id="card_two_title" name="card_two_title" type="text" value="{{ old('card_two_title', $homeContent['card_two_title'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="card_two_pill">Card Two Pill</label>
+                            <input id="card_two_pill" name="card_two_pill" type="text" value="{{ old('card_two_pill', $homeContent['card_two_pill'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="card_three_title">Card Three Title</label>
+                            <input id="card_three_title" name="card_three_title" type="text" value="{{ old('card_three_title', $homeContent['card_three_title'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="card_four_title">Card Four Title</label>
+                            <input id="card_four_title" name="card_four_title" type="text" value="{{ old('card_four_title', $homeContent['card_four_title'] ?? '') }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="card_four_pill">Card Four Pill</label>
+                            <input id="card_four_pill" name="card_four_pill" type="text" value="{{ old('card_four_pill', $homeContent['card_four_pill'] ?? '') }}" required>
+                        </div>
+                    </div>
+                </section>
             </div>
             <div class="actions">
                 <button type="submit" class="btn btn-primary">Save Homepage</button>
             </div>
         </form>
+
+        <div id="seoLinkDialog" class="seo-dialog" aria-hidden="true">
+            <div class="seo-dialog-card" role="dialog" aria-modal="true" aria-labelledby="seoLinkDialogTitle">
+                <div id="seoLinkDialogTitle" class="seo-dialog-title">Insert Hyperlink</div>
+                <div class="seo-dialog-grid">
+                    <div class="seo-dialog-row">
+                        <label for="seo_link_url">URL</label>
+                        <input id="seo_link_url" type="url" placeholder="https://example.com">
+                    </div>
+                    <div class="seo-dialog-row">
+                        <label for="seo_link_text">Link Text</label>
+                        <input id="seo_link_text" type="text" placeholder="Visible text (optional)">
+                    </div>
+                    <label class="seo-dialog-check">
+                        <input id="seo_link_new_tab" type="checkbox">
+                        Open link in a new tab
+                    </label>
+                </div>
+                <div class="seo-dialog-actions">
+                    <button type="button" id="seoLinkCancel" class="btn btn-ghost">Cancel</button>
+                    <button type="button" id="seoLinkApply" class="btn btn-primary">Apply Link</button>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 <script>
@@ -254,8 +328,15 @@
         const formatMenuBtn = document.getElementById('seoFormatMenuBtn');
         const formatPanel = document.getElementById('seoFormatPanel');
         const formatButtons = shell ? shell.querySelectorAll('[data-format]') : [];
+        const linkDialog = document.getElementById('seoLinkDialog');
+        const linkUrlInput = document.getElementById('seo_link_url');
+        const linkTextInput = document.getElementById('seo_link_text');
+        const linkNewTab = document.getElementById('seo_link_new_tab');
+        const linkCancel = document.getElementById('seoLinkCancel');
+        const linkApply = document.getElementById('seoLinkApply');
+        let savedSelectionRange = null;
 
-        if (!textarea || !shell || !editor || !source || !form || !formatMenuBtn || !formatPanel) {
+        if (!textarea || !shell || !editor || !source || !form || !formatMenuBtn || !formatPanel || !linkDialog || !linkUrlInput || !linkTextInput || !linkNewTab || !linkCancel || !linkApply) {
             return;
         }
 
@@ -277,6 +358,115 @@
                 textarea.value = editor.innerHTML;
                 updateWordCount(editor.innerHTML);
             }
+        }
+
+        function escapeHtml(value) {
+            return (value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value).replace(/"/g, '&quot;');
+        }
+
+        function saveSelectionRange() {
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0) {
+                return null;
+            }
+            const range = selection.getRangeAt(0);
+            if (!editor.contains(range.commonAncestorContainer)) {
+                return null;
+            }
+            return range.cloneRange();
+        }
+
+        function restoreSelectionRange(range) {
+            if (!range) {
+                return;
+            }
+            const selection = window.getSelection();
+            if (!selection) {
+                return;
+            }
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function setLinkDialogOpen(open) {
+            linkDialog.classList.toggle('is-open', open);
+            linkDialog.setAttribute('aria-hidden', open ? 'false' : 'true');
+            if (open) {
+                linkUrlInput.focus();
+                linkUrlInput.select();
+            } else {
+                editor.focus();
+            }
+        }
+
+        function openLinkDialog() {
+            savedSelectionRange = saveSelectionRange();
+            restoreSelectionRange(savedSelectionRange);
+
+            const selection = window.getSelection();
+            const selectedText = selection ? selection.toString().trim() : '';
+            let selectedLink = null;
+            if (selection && selection.anchorNode) {
+                const node = selection.anchorNode.nodeType === Node.TEXT_NODE ? selection.anchorNode.parentElement : selection.anchorNode;
+                selectedLink = node && node.closest ? node.closest('a') : null;
+            }
+
+            linkUrlInput.value = selectedLink ? (selectedLink.getAttribute('href') || '') : '';
+            linkTextInput.value = selectedText || (selectedLink ? (selectedLink.textContent || '') : '');
+            linkNewTab.checked = !!(selectedLink && selectedLink.getAttribute('target') === '_blank');
+
+            setLinkDialogOpen(true);
+        }
+
+        function closeLinkDialog() {
+            setLinkDialogOpen(false);
+        }
+
+        function applyLinkFromDialog() {
+            const url = linkUrlInput.value.trim();
+            const text = linkTextInput.value.trim();
+            if (!url) {
+                linkUrlInput.focus();
+                return;
+            }
+
+            const normalizedUrl = /^(https?:|mailto:|tel:|\/)/i.test(url) ? url : ('https://' + url);
+            restoreSelectionRange(savedSelectionRange);
+            editor.focus();
+
+            if (text) {
+                const anchorHtml = '<a href="' + escapeAttr(normalizedUrl) + '"' + (linkNewTab.checked ? ' target="_blank" rel="noopener"' : '') + '>' + escapeHtml(text) + '</a>';
+                document.execCommand('insertHTML', false, anchorHtml);
+            } else {
+                const selection = window.getSelection();
+                const hasSelection = !!(selection && selection.toString().trim());
+                if (hasSelection) {
+                    document.execCommand('createLink', false, normalizedUrl);
+                    if (linkNewTab.checked && selection && selection.anchorNode) {
+                        const node = selection.anchorNode.nodeType === Node.TEXT_NODE ? selection.anchorNode.parentElement : selection.anchorNode;
+                        const link = node && node.closest ? node.closest('a') : null;
+                        if (link) {
+                            link.setAttribute('target', '_blank');
+                            link.setAttribute('rel', 'noopener');
+                        }
+                    }
+                } else {
+                    const label = normalizedUrl;
+                    const anchorHtml = '<a href="' + escapeAttr(normalizedUrl) + '"' + (linkNewTab.checked ? ' target="_blank" rel="noopener"' : '') + '>' + escapeHtml(label) + '</a>';
+                    document.execCommand('insertHTML', false, anchorHtml);
+                }
+            }
+
+            closeLinkDialog();
+            syncToTextarea();
+            syncToolbarState();
         }
 
         function runCommand(cmd) {
@@ -384,16 +574,14 @@
             }
 
             if (action === 'link') {
-                const url = window.prompt('Enter URL');
-                if (url) {
-                    editor.focus();
-                    document.execCommand('createLink', false, url.trim());
-                }
+                openLinkDialog();
+                return;
             } else if (action === 'image') {
                 const url = window.prompt('Enter image URL');
                 if (url) {
                     editor.focus();
-                    document.execCommand('insertImage', false, url.trim());
+                    const imgUrl = url.trim();
+                    document.execCommand('insertImage', false, imgUrl);
                 }
             } else if (action === 'media') {
                 const value = window.prompt('Enter video URL or iframe embed code');
@@ -403,11 +591,9 @@
                     if (/^<iframe/i.test(media)) {
                         document.execCommand('insertHTML', false, media);
                     } else if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(media)) {
-                        const safe = media.replace(/"/g, '&quot;');
-                        document.execCommand('insertHTML', false, '<video controls src="' + safe + '" style="max-width:100%;"></video>');
+                        document.execCommand('insertHTML', false, '<video controls src="' + escapeAttr(media) + '" style="max-width:100%;"></video>');
                     } else {
-                        const safeUrl = media.replace(/"/g, '&quot;');
-                        document.execCommand('insertHTML', false, '<a href="' + safeUrl + '" target="_blank" rel="noopener">' + safeUrl + '</a>');
+                        document.execCommand('insertHTML', false, '<a href="' + escapeAttr(media) + '" target="_blank" rel="noopener">' + escapeHtml(media) + '</a>');
                     }
                 }
             }
@@ -443,6 +629,31 @@
         document.addEventListener('click', function (event) {
             if (!formatPanel.contains(event.target) && event.target !== formatMenuBtn) {
                 closeFormatPanel();
+            }
+        });
+
+        linkCancel.addEventListener('click', closeLinkDialog);
+        linkApply.addEventListener('click', applyLinkFromDialog);
+        linkDialog.addEventListener('click', function (event) {
+            if (event.target === linkDialog) {
+                closeLinkDialog();
+            }
+        });
+        linkUrlInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyLinkFromDialog();
+            }
+        });
+        linkTextInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyLinkFromDialog();
+            }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && linkDialog.classList.contains('is-open')) {
+                closeLinkDialog();
             }
         });
 
