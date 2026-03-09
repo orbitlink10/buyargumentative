@@ -272,7 +272,7 @@
             box-shadow: 0 18px 40px rgba(17,24,39,0.06);
             color: #1f2937;
             line-height: 1.7;
-            font-size: 18px;
+            font-size: 16px;
         }
         .seo-card h1,
         .seo-card h2,
@@ -283,6 +283,12 @@
             color: #0f172a;
             letter-spacing: -0.3px;
         }
+        .seo-card h1 { font-size: clamp(26px, 1vw + 12px, 34px); font-weight: 800; }
+        .seo-card h2 { font-size: clamp(23px, 0.9vw + 11px, 30px); font-weight: 800; }
+        .seo-card h3 { font-size: clamp(20px, 0.7vw + 10px, 26px); font-weight: 800; }
+        .seo-card h4 { font-size: clamp(18px, 0.5vw + 9px, 22px); font-weight: 800; }
+        .seo-card h5 { font-size: clamp(17px, 0.4vw + 8px, 20px); font-weight: 800; margin: 0 0 10px; }
+        .seo-card h6 { font-size: clamp(16px, 0.3vw + 8px, 18px); font-weight: 800; margin: 0 0 10px; }
         .seo-card p {
             margin: 0 0 14px;
         }
@@ -307,7 +313,13 @@
             main { grid-template-columns: 1fr; padding: 40px 20px 60px; }
             .hero-visual { min-height: 320px; }
             .seo-wrap { padding: 0 20px 60px; }
-            .seo-card { padding: 20px; font-size: 17px; }
+            .seo-card { padding: 20px; font-size: 16px; }
+            .seo-card h1 { font-size: 28px; }
+            .seo-card h2 { font-size: 25px; }
+            .seo-card h3 { font-size: 22px; }
+            .seo-card h4 { font-size: 20px; }
+            .seo-card h5 { font-size: 18px; }
+            .seo-card h6 { font-size: 17px; }
         }
     </style>
 </head>
