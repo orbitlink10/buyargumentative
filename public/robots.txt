@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /order
+Disallow: /order/
+Disallow: /customer/
+Disallow: /admin/
+
+Sitemap: https://buyargumentativeessay.net/sitemap.xml

@@ -126,25 +126,25 @@ if (!function_exists('defaultHomepageContent')) {
     function defaultHomepageContent(): array
     {
         return [
-            'eyebrow' => 'Trusted by 25k+ students',
-            'hero_title_prefix' => 'Professional',
-            'hero_title_highlight' => 'Paper Writing',
-            'hero_title_suffix' => 'Service that guarantees results',
-            'hero_description' => 'Hire a dedicated academic writer with subject expertise, 24/7 communication, and industry-leading turnaround times. Every paper is 100% original and tailored to your rubric.',
+            'eyebrow' => 'Custom argumentative essay support',
+            'hero_title_prefix' => 'Buy',
+            'hero_title_highlight' => 'Argumentative Essay',
+            'hero_title_suffix' => '',
+            'hero_description' => 'Order a custom argumentative essay written to your instructions and citation style. Choose your academic level and deadline, then receive original, research-backed writing with free revisions and 24/7 support.',
             'seo_content' => '',
-            'cta_pill' => 'Fast delivery | Free revisions',
-            'rating_one_score' => '4.4/5',
-            'rating_one_label' => 'Trustpilot',
-            'rating_two_score' => '4.2/5',
-            'rating_two_label' => 'Sitejabber',
-            'rating_three_score' => '4.9/5',
-            'rating_three_label' => 'Reviews.io',
-            'card_one_title' => 'Business Plan',
-            'card_two_title' => 'Problem Solving',
-            'card_two_pill' => 'Data | Finance | Math',
-            'card_three_title' => 'Research Paper',
-            'card_four_title' => 'Essay',
-            'card_four_pill' => 'Creative | Argumentative',
+            'cta_pill' => 'Free revisions | 24/7 support',
+            'rating_one_score' => '24/7',
+            'rating_one_label' => 'Support',
+            'rating_two_score' => 'Free',
+            'rating_two_label' => 'Revisions',
+            'rating_three_score' => 'Private',
+            'rating_three_label' => 'Ordering',
+            'card_one_title' => 'Strong Thesis',
+            'card_two_title' => 'Research & Evidence',
+            'card_two_pill' => 'Credible Sources | Citations',
+            'card_three_title' => 'Counterargument',
+            'card_four_title' => 'Argumentative Essay',
+            'card_four_pill' => 'APA | MLA | Chicago',
         ];
     }
 }
@@ -281,8 +281,20 @@ if (!function_exists('pricePerPageFor')) {
 }
 
 Route::get('/', function () {
+    $pricing = loadPricing();
+    $minPrice = null;
+    foreach ($pricing as $rows) {
+        foreach ($rows as $value) {
+            $value = (float) $value;
+            if ($value > 0 && ($minPrice === null || $value < $minPrice)) {
+                $minPrice = $value;
+            }
+        }
+    }
+
     return view('welcome', [
         'homeContent' => loadHomepageContent(),
+        'minPrice' => $minPrice,
     ]);
 });
 
@@ -297,11 +309,11 @@ Route::get('/pages/{slug}', function ($slug) {
 
 Route::get('/writers', function () {
     $writers = [
-        ['name' => 'Alice Writer', 'specialty' => 'Business, Management', 'rating' => '4.9', 'orders' => 312],
-        ['name' => 'Brian Smith', 'specialty' => 'Nursing, Healthcare', 'rating' => '4.8', 'orders' => 284],
-        ['name' => 'Carol Johnson', 'specialty' => 'Technology, IT', 'rating' => '4.9', 'orders' => 355],
-        ['name' => 'David Lee', 'specialty' => 'Literature, History', 'rating' => '4.7', 'orders' => 241],
-        ['name' => 'Eva Brown', 'specialty' => 'Economics, Finance', 'rating' => '4.8', 'orders' => 298],
+        ['area' => 'Business & Management', 'topics' => 'Business plans, management, marketing and organizational behavior.'],
+        ['area' => 'Nursing & Healthcare', 'topics' => 'Nursing practice, healthcare policy and patient care topics.'],
+        ['area' => 'Technology & IT', 'topics' => 'Computer science, information systems and emerging technology.'],
+        ['area' => 'Literature & History', 'topics' => 'Literary analysis, historical argument and source-based writing.'],
+        ['area' => 'Economics & Finance', 'topics' => 'Economic reasoning, financial analysis and data-backed argument.'],
     ];
 
     return view('writers', ['writers' => $writers]);
@@ -532,9 +544,9 @@ Route::post('/admin/homepage-content', function (\Illuminate\Http\Request $reque
 
     $data = $request->validate([
         'eyebrow' => 'required|string|max:120',
-        'hero_title_prefix' => 'required|string|max:120',
+        'hero_title_prefix' => 'nullable|string|max:120',
         'hero_title_highlight' => 'required|string|max:120',
-        'hero_title_suffix' => 'required|string|max:180',
+        'hero_title_suffix' => 'nullable|string|max:180',
         'hero_description' => 'required|string|max:2000',
         'seo_content' => 'nullable|string|max:200000',
         'cta_pill' => 'required|string|max:120',
@@ -889,10 +901,51 @@ Route::post('/admin/settings', function (\Illuminate\Http\Request $request) {
     return back()->with('settings_saved', 'Pricing settings updated successfully.');
 })->name('admin.settings.update');
 
+Route::get('/sitemap.xml', function () {
+    $baseUrl = rtrim((string) config('app.url'), '/');
+    $urls = [
+        $baseUrl . '/',
+        $baseUrl . '/writers',
+    ];
+
+    $staticPages = config('site', []);
+    foreach ($staticPages as $slug => $page) {
+        $urls[] = $baseUrl . '/' . $slug;
+    }
+
+    foreach (loadPages() as $page) {
+        if (!empty($page['slug'])) {
+            $urls[] = $baseUrl . '/' . $page['slug'];
+        }
+    }
+
+    $urls = array_values(array_unique($urls));
+    sort($urls);
+
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
+    foreach ($urls as $url) {
+        $xml .= "  <url><loc>" . htmlspecialchars($url, ENT_XML1, 'UTF-8') . "</loc></url>\n";
+    }
+    $xml .= "</urlset>\n";
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+});
+
+// Legacy URL redirects (resolves previously 404ing navigation links).
+Route::redirect('/services2', '/argumentative-essay-writing-service', 301);
+Route::redirect('/about-us2', '/about-us', 301);
+Route::redirect('/faqs2', '/', 301);
+
 Route::get('/{slug}', function ($slug) {
     $slug = trim((string) $slug);
     if ($slug === '') {
         abort(404);
+    }
+
+    $staticPages = config('site', []);
+    if (isset($staticPages[$slug])) {
+        return view('static-page', ['page' => array_merge(['slug' => $slug], $staticPages[$slug])]);
     }
 
     $page = collect(loadPages())->firstWhere('slug', $slug);

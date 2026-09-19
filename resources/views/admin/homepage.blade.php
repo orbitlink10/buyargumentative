@@ -223,32 +223,32 @@
 
                 <section class="panel">
                     <div class="panel-head">
-                        <div class="panel-title">Ratings</div>
-                        <div class="panel-sub">Trust badges displayed in the homepage hero.</div>
+                        <div class="panel-title">Trust Badges</div>
+                        <div class="panel-sub">Feature badges displayed in the homepage hero.</div>
                     </div>
                     <div class="grid">
                         <div class="field">
-                            <label for="rating_one_score">Rating One Score</label>
+                            <label for="rating_one_score">Badge One Value</label>
                             <input id="rating_one_score" name="rating_one_score" type="text" value="{{ old('rating_one_score', $homeContent['rating_one_score'] ?? '') }}" required>
                         </div>
                         <div class="field">
-                            <label for="rating_one_label">Rating One Label</label>
+                            <label for="rating_one_label">Badge One Label</label>
                             <input id="rating_one_label" name="rating_one_label" type="text" value="{{ old('rating_one_label', $homeContent['rating_one_label'] ?? '') }}" required>
                         </div>
                         <div class="field">
-                            <label for="rating_two_score">Rating Two Score</label>
+                            <label for="rating_two_score">Badge Two Value</label>
                             <input id="rating_two_score" name="rating_two_score" type="text" value="{{ old('rating_two_score', $homeContent['rating_two_score'] ?? '') }}" required>
                         </div>
                         <div class="field">
-                            <label for="rating_two_label">Rating Two Label</label>
+                            <label for="rating_two_label">Badge Two Label</label>
                             <input id="rating_two_label" name="rating_two_label" type="text" value="{{ old('rating_two_label', $homeContent['rating_two_label'] ?? '') }}" required>
                         </div>
                         <div class="field">
-                            <label for="rating_three_score">Rating Three Score</label>
+                            <label for="rating_three_score">Badge Three Value</label>
                             <input id="rating_three_score" name="rating_three_score" type="text" value="{{ old('rating_three_score', $homeContent['rating_three_score'] ?? '') }}" required>
                         </div>
                         <div class="field">
-                            <label for="rating_three_label">Rating Three Label</label>
+                            <label for="rating_three_label">Badge Three Label</label>
                             <input id="rating_three_label" name="rating_three_label" type="text" value="{{ old('rating_three_label', $homeContent['rating_three_label'] ?? '') }}" required>
                         </div>
                     </div>

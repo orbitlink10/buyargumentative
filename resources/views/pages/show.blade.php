@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $page['meta_title'] ?? ($page['page_title'] ?? 'Page') }}</title>
     <meta name="description" content="{{ $page['meta_description'] ?? '' }}">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="{{ route('pages.show', ['slug' => $page['slug']]) }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
